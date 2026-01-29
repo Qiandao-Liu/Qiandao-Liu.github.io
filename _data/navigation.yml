@@ -15,7 +15,10 @@ main:
     url: /portfolio/
 
   - title: "CV"
-    url: /cv/
+    url: /files/resume_qiandao_liu.pdf
 
   - title: "Teaching"
     url: /teaching/
+
+  - title: "MAE 4190"
+    url: /mae4190/
