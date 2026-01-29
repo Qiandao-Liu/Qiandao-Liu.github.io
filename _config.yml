@@ -23,9 +23,9 @@ repository               : "Qiandao-Liu/Qiandao-Liu.github.io"
 author:
   # Biographic information
   avatar           : "profile.png"
-  name             : "Qiandao Liu (刘乾道)"
+  name             : "Qiandao Liu"
   pronouns         : # example: "she/her"
-  bio              : "BS CS @Cornell University"
+  bio              : " "
   location         : "Ithaca, NY"
   employer         : "Cornell University"
   uri              : # URL
