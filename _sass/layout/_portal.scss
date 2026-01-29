@@ -22,17 +22,12 @@ body.portal-transition--active {
 .portal__spark {
   position: absolute;
   inset: -20%;
+  opacity: 0;
+  transform: scale(0.5);
 }
 
 .portal__veil {
   background: radial-gradient(circle at 50% 45%, rgba(110, 255, 230, 0.15) 0%, rgba(8, 18, 24, 0.88) 45%, rgba(0, 0, 0, 0.98) 70%);
-  transform: scale(0.6);
-  animation: portal-veil 1.1s ease-in forwards;
-}
-
-.portal__ring {
-  transform: scale(0.2);
-  animation: portal-ring 1.1s ease-in forwards;
 }
 
 .portal__ring::before {
@@ -42,15 +37,28 @@ body.portal-transition--active {
   background: conic-gradient(from 0deg, rgba(120, 255, 240, 0) 0deg, rgba(120, 255, 240, 0.2) 90deg, rgba(120, 200, 255, 0.1) 180deg, rgba(120, 255, 240, 0) 360deg);
   mix-blend-mode: screen;
   filter: blur(12px) saturate(1.4);
-  animation: portal-spin 1.2s linear infinite;
 }
 
 .portal__spark {
-  opacity: 0.6;
-  transform: scale(0.6);
   background:
     radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 40%),
     repeating-linear-gradient(120deg, rgba(120, 255, 240, 0.2) 0 2px, rgba(120, 255, 240, 0) 2px 12px);
+}
+
+/* Only animate when portal is activated */
+body.portal-transition--active .portal__veil {
+  animation: portal-veil 1.1s ease-in forwards;
+}
+
+body.portal-transition--active .portal__ring {
+  animation: portal-ring 1.1s ease-in forwards;
+}
+
+body.portal-transition--active .portal__ring::before {
+  animation: portal-spin 1.2s linear infinite;
+}
+
+body.portal-transition--active .portal__spark {
   animation: portal-spark 1.1s ease-in forwards;
 }
 
