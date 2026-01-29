@@ -88,6 +88,8 @@ Updated configuration files (`ble_arduino.ino`, `connections.yaml`, `cmd_types.p
 
 **Solution:** Implemented command handler that formats time as `T:timestamp` using `millis()` function and sends via BLE characteristic. Successfully tested with response format "T:105609".
 
+<img src='/images/mae4190/lab1/lab1_task3.png' width='700'>
+
 ---
 
 ### Task 4: Notification Handler Setup
@@ -95,6 +97,8 @@ Updated configuration files (`ble_arduino.ino`, `connections.yaml`, `cmd_types.p
 **Objective:** Set up Python notification handler for asynchronous data reception.
 
 **Solution:** Created callback function `notification_handler()` that automatically processes incoming BLE notifications. The handler parses timestamp strings and records both the timestamp value and arrival time for rate analysis. This enables non-blocking data reception without constant polling.
+
+<img src='/images/mae4190/lab1/lab1_task4.png' width='700'>
 
 ---
 
@@ -110,6 +114,8 @@ Updated configuration files (`ble_arduino.ino`, `connections.yaml`, `cmd_types.p
 - **Effective rate: 6.79 messages/second** (~147ms per message)
 
 **Analysis:** Despite requesting every 100ms, actual rate is limited by BLE connection intervals and notification processing overhead.
+
+<img src='/images/mae4190/lab1/lab1_task5.png' width='700'>
 
 ---
 
@@ -131,6 +137,8 @@ if (collectingData && (millis() - lastSampleTime >= sampleInterval)) {
     lastSampleTime = millis();
 }
 ```
+
+<img src='/images/mae4190/lab1/lab1_task6.png' width='700'>
 
 ---
 
