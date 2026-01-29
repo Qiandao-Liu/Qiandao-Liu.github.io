@@ -103,28 +103,56 @@ body.wind-sweep--active #main {
 }
 
 /* ========================================
-   Art Mode - Gray Theme
+   Art Mode - Fixed Gray Theme
+   Override ALL theme variables to ensure consistent look
    ======================================== */
 
+body.art-mode,
+body.art-mode:root,
+html:has(body.art-mode) {
+  --global-base-color: #888 !important;
+  --global-bg-color: #2a2a2a !important;
+  --global-footer-bg-color: #222 !important;
+  --global-border-color: #444 !important;
+  --global-dark-border-color: #555 !important;
+  --global-code-background-color: #333 !important;
+  --global-code-text-color: #ccc !important;
+  --global-fig-caption-color: #999 !important;
+  --global-link-color: #aaa !important;
+  --global-link-color-hover: #fff !important;
+  --global-link-color-visited: #888 !important;
+  --global-masthead-link-color: #ccc !important;
+  --global-masthead-link-color-hover: #fff !important;
+  --global-text-color: #d0d0d0 !important;
+  --global-text-color-light: #888 !important;
+  --global-thead-color: #333 !important;
+}
+
 body.art-mode {
-  --background-color: #2a2a2a;
-  --text-color: #d0d0d0;
-  --primary-color: #888;
-  --link-color: #999;
-  background-color: #2a2a2a;
+  background-color: #2a2a2a !important;
+  color: #d0d0d0 !important;
 }
 
 body.art-mode .masthead {
-  background: #333;
-  border-bottom: 1px solid #444;
+  background: #333 !important;
+  border-bottom: 1px solid #444 !important;
 }
 
 body.art-mode .masthead a {
-  color: #ccc;
+  color: #ccc !important;
 }
 
 body.art-mode .masthead a:hover {
-  color: #fff;
+  color: #fff !important;
+}
+
+body.art-mode .page__footer {
+  background: #222 !important;
+  color: #888 !important;
+}
+
+body.art-mode .page__footer a {
+  color: #aaa !important;
 }
 
 /* Hide academic nav items in art mode */
