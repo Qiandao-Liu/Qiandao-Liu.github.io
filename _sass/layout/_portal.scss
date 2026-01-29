@@ -1,113 +1,244 @@
-.portal-transition {
+/* Wind sweep transition - academic to art mode */
+.wind-sweep {
   position: fixed;
   inset: 0;
   z-index: 9999;
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s ease;
 }
 
-body.portal-transition--active .portal-transition {
+.wind-sweep::before {
+  content: "";
+  position: absolute;
+  top: -100%;
+  left: -100%;
+  width: 300%;
+  height: 300%;
+  background: linear-gradient(
+    135deg,
+    rgba(45, 45, 45, 0.95) 0%,
+    rgba(30, 30, 30, 0.98) 40%,
+    rgba(20, 20, 20, 0.95) 60%,
+    transparent 60.5%
+  );
+  transform: translateX(-100%) translateY(-100%);
+}
+
+body.wind-sweep--active .wind-sweep {
   opacity: 1;
   visibility: visible;
 }
 
-body.portal-transition--active {
+body.wind-sweep--active .wind-sweep::before {
+  animation: wind-sweep 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes wind-sweep {
+  0% {
+    transform: translateX(-100%) translateY(-100%);
+  }
+  100% {
+    transform: translateX(35%) translateY(35%);
+  }
+}
+
+/* Particles blown by wind */
+.wind-sweep__particles {
+  position: absolute;
+  inset: 0;
   overflow: hidden;
 }
 
-.portal__veil,
-.portal__ring,
-.portal__spark {
+.wind-sweep__particle {
   position: absolute;
-  inset: -20%;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
   opacity: 0;
-  transform: scale(0.5);
 }
 
-.portal__veil {
-  background: radial-gradient(circle at 50% 45%, rgba(110, 255, 230, 0.15) 0%, rgba(8, 18, 24, 0.88) 45%, rgba(0, 0, 0, 0.98) 70%);
+body.wind-sweep--active .wind-sweep__particle {
+  animation: particle-fly 1s ease-out forwards;
 }
 
-.portal__ring::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: conic-gradient(from 0deg, rgba(120, 255, 240, 0) 0deg, rgba(120, 255, 240, 0.2) 90deg, rgba(120, 200, 255, 0.1) 180deg, rgba(120, 255, 240, 0) 360deg);
-  mix-blend-mode: screen;
-  filter: blur(12px) saturate(1.4);
-}
+body.wind-sweep--active .wind-sweep__particle:nth-child(1) { top: 10%; left: 5%; animation-delay: 0.1s; }
+body.wind-sweep--active .wind-sweep__particle:nth-child(2) { top: 25%; left: 15%; animation-delay: 0.15s; }
+body.wind-sweep--active .wind-sweep__particle:nth-child(3) { top: 5%; left: 30%; animation-delay: 0.2s; }
+body.wind-sweep--active .wind-sweep__particle:nth-child(4) { top: 40%; left: 10%; animation-delay: 0.25s; }
+body.wind-sweep--active .wind-sweep__particle:nth-child(5) { top: 15%; left: 45%; animation-delay: 0.3s; }
+body.wind-sweep--active .wind-sweep__particle:nth-child(6) { top: 50%; left: 25%; animation-delay: 0.35s; }
+body.wind-sweep--active .wind-sweep__particle:nth-child(7) { top: 30%; left: 55%; animation-delay: 0.4s; }
+body.wind-sweep--active .wind-sweep__particle:nth-child(8) { top: 60%; left: 40%; animation-delay: 0.45s; }
 
-.portal__spark {
-  background:
-    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 40%),
-    repeating-linear-gradient(120deg, rgba(120, 255, 240, 0.2) 0 2px, rgba(120, 255, 240, 0) 2px 12px);
-}
-
-/* Only animate when portal is activated */
-body.portal-transition--active .portal__veil {
-  animation: portal-veil 1.1s ease-in forwards;
-}
-
-body.portal-transition--active .portal__ring {
-  animation: portal-ring 1.1s ease-in forwards;
-}
-
-body.portal-transition--active .portal__ring::before {
-  animation: portal-spin 1.2s linear infinite;
-}
-
-body.portal-transition--active .portal__spark {
-  animation: portal-spark 1.1s ease-in forwards;
-}
-
-@keyframes portal-veil {
+@keyframes particle-fly {
   0% {
     opacity: 0;
-    transform: scale(0.55);
+    transform: translate(0, 0) scale(1);
+  }
+  20% {
+    opacity: 0.8;
   }
   100% {
+    opacity: 0;
+    transform: translate(120vw, 120vh) scale(0.3);
+  }
+}
+
+/* Content fade during transition */
+body.wind-sweep--active .masthead,
+body.wind-sweep--active .page__content,
+body.wind-sweep--active .page__footer {
+  animation: content-fade 0.6s ease-out forwards;
+}
+
+@keyframes content-fade {
+  0% {
     opacity: 1;
-    transform: scale(1.08);
-  }
-}
-
-@keyframes portal-ring {
-  0% {
-    opacity: 0;
-    transform: scale(0.1);
   }
   100% {
-    opacity: 0.9;
-    transform: scale(1.45);
-  }
-}
-
-@keyframes portal-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes portal-spark {
-  0% {
     opacity: 0;
-    transform: scale(0.4);
-  }
-  100% {
-    opacity: 0.7;
-    transform: scale(1.1);
   }
 }
 
+/* Art mode styles */
+body.art-mode {
+  --bg-color: #1a1a1a;
+  --text-color: #e8e8e8;
+  --accent-color: #c9a962;
+}
+
+body.art-mode .masthead {
+  background: #1a1a1a;
+  border-bottom: 1px solid rgba(201, 169, 98, 0.3);
+}
+
+/* Hide academic nav items in art mode */
+body.art-mode [data-nav-academic] {
+  display: none;
+}
+
+/* Hide art nav items in academic mode (default) */
+[data-nav-art] {
+  display: none;
+}
+
+body.art-mode [data-nav-art] {
+  display: block;
+}
+
+/* Accessibility */
 @media (prefers-reduced-motion: reduce) {
-  .portal-transition,
-  .portal__veil,
-  .portal__ring,
-  .portal__ring::before,
-  .portal__spark {
+  .wind-sweep::before,
+  .wind-sweep__particle {
     animation: none !important;
     transition: none !important;
   }
+
+  body.wind-sweep--active .masthead,
+  body.wind-sweep--active .page__content,
+  body.wind-sweep--active .page__footer {
+    animation: none !important;
+  }
+}
+
+/* ========================================
+   Art Mode Homepage Styles
+   ======================================== */
+
+body.art-mode {
+  background: #0d0d0d;
+  color: #e8e8e8;
+  min-height: 100vh;
+}
+
+body.art-mode a {
+  color: #c9a962;
+}
+
+body.art-mode a:hover {
+  color: #e8d5a3;
+}
+
+.art-home {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+}
+
+.art-home__hero {
+  text-align: center;
+  padding: 6rem 0 4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 3rem;
+}
+
+.art-home__title {
+  font-size: 3.5rem;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #fff;
+  margin: 0 0 1rem;
+}
+
+.art-home__subtitle {
+  font-size: 1.1rem;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  color: #888;
+  margin: 0;
+}
+
+.art-home__intro {
+  max-width: 600px;
+  margin: 0 auto 4rem;
+  text-align: center;
+}
+
+.art-home__intro p {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #aaa;
+}
+
+.art-home__gallery-placeholder {
+  text-align: center;
+  padding: 6rem 2rem;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: #666;
+}
+
+/* Gallery page */
+.art-gallery {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+}
+
+.art-gallery__title {
+  font-size: 2rem;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.art-gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.art-gallery__placeholder {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 6rem 2rem;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: #666;
 }

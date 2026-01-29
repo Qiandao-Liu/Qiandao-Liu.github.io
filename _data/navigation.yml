@@ -10,10 +10,21 @@
 main:
   - title: "Projects"
     url: /portfolio/
+    academic: true
 
   - title: "CV"
     url: /cv/
+    academic: true
+
+  - title: "Gallery"
+    url: /gallery/
+    art: true
+
+  - title: "Academic"
+    url: /
+    art: true
 
   - title: "Portal"
     url: /portal/
     portal: true
+    academic: true

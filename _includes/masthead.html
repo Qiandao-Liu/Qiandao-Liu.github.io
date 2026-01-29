@@ -14,7 +14,7 @@
             {% else %}
               {% assign domain = base_path %}
             {% endif %}
-            <li class="masthead__menu-item {% if page.url contains link.url and link.url != '/' %}selected{% endif %}">
+            <li class="masthead__menu-item {% if page.url contains link.url and link.url != '/' %}selected{% endif %}"{% if link.academic %} data-nav-academic="true"{% endif %}{% if link.art %} data-nav-art="true"{% endif %}>
               <a href="{{ domain }}{{ link.url }}"{% if link.portal %} data-portal="true" class="portal-link"{% endif %}>{{ link.title }}</a>
             </li>
           {% endfor %}
