@@ -15,7 +15,7 @@ main:
     url: /portfolio/
 
   - title: "CV"
-    url: /files/resume_qiandao_liu.pdf
+    url: /cv/
 
   - title: "Teaching"
     url: /teaching/

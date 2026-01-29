@@ -7,7 +7,7 @@ redirect_from:
   - /about.html
 ---
 
-Hi! I'm Qiandao Liu (刘乾道), an undergraduate student at Cornell University majoring in Computer Science with a Robotics Minor.
+Hi! I'm Qiandao Liu (刘乾道).
 
 Research Interests
 ======
@@ -18,14 +18,6 @@ Currently, I am a Research Assistant at the [Cornell EmPRISE Lab](https://empris
 Education
 ======
 **Cornell University**, Ithaca, NY (Aug 2023 - Dec 2026 Expected)
-* B.S. in Computer Science, Robotics Minor
-* GPA: 3.82
-
-News
-======
-* **2024**: Awarded Cornell BURE Program with $7,000 research stipend
-* **2024**: 2nd Place at Cornell RCareWorld Hackathon
-* **2023**: Best Backend Award at Cornell AppDev Hackathon
 
 Contact
 ======
