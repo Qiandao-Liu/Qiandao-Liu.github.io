@@ -129,16 +129,21 @@ body.art-mode .masthead a:hover {
 
 /* Hide academic nav items in art mode */
 body.art-mode [data-nav-academic] {
-  display: none;
+  display: none !important;
 }
 
 /* Hide art nav items in academic mode (default) */
 [data-nav-art] {
-  display: none;
+  display: none !important;
 }
 
 body.art-mode [data-nav-art] {
-  display: block;
+  display: inline-block !important;
+}
+
+/* Hide theme toggle in art mode (fixed gray theme) */
+body.art-mode #theme-toggle {
+  display: none !important;
 }
 
 /* Accessibility */

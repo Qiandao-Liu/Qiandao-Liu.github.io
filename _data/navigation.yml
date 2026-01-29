@@ -1,11 +1,7 @@
-# The following is the order of the links in the header of the website.
-#
-# Changing the order here will adjust the order and you can also add additional
-# links. Removing a link prevents it from showing in the header, but does not
-# prevent it from being included in the site.
-#
-# NOTE that only one of the CV options should be selected, the first is for the
-#      Markdown formatted page while the second is generated using JSON.
+# Navigation links in the header
+# academic: true = only shows in academic mode
+# art: true = only shows in art mode
+# portal: true = triggers wind-sweep transition
 
 main:
   - title: "Projects"
@@ -18,13 +14,9 @@ main:
 
   - title: "Gallery"
     url: /gallery/
-    art: true
+    academic: true
+    portal: true
 
   - title: "Academic"
     url: /
     art: true
-
-  - title: "Portal"
-    url: /portal/
-    portal: true
-    academic: true
