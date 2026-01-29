@@ -13,3 +13,7 @@ main:
 
   - title: "CV"
     url: /cv/
+
+  - title: "Portal"
+    url: /portal/
+    portal: true
