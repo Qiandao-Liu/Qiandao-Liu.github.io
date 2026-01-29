@@ -1,0 +1,105 @@
+.portal-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+}
+
+body.portal-transition--active .portal-transition {
+  opacity: 1;
+  visibility: visible;
+}
+
+body.portal-transition--active {
+  overflow: hidden;
+}
+
+.portal__veil,
+.portal__ring,
+.portal__spark {
+  position: absolute;
+  inset: -20%;
+}
+
+.portal__veil {
+  background: radial-gradient(circle at 50% 45%, rgba(110, 255, 230, 0.15) 0%, rgba(8, 18, 24, 0.88) 45%, rgba(0, 0, 0, 0.98) 70%);
+  transform: scale(0.6);
+  animation: portal-veil 1.1s ease-in forwards;
+}
+
+.portal__ring {
+  transform: scale(0.2);
+  animation: portal-ring 1.1s ease-in forwards;
+}
+
+.portal__ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(from 0deg, rgba(120, 255, 240, 0) 0deg, rgba(120, 255, 240, 0.2) 90deg, rgba(120, 200, 255, 0.1) 180deg, rgba(120, 255, 240, 0) 360deg);
+  mix-blend-mode: screen;
+  filter: blur(12px) saturate(1.4);
+  animation: portal-spin 1.2s linear infinite;
+}
+
+.portal__spark {
+  opacity: 0.6;
+  transform: scale(0.6);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 40%),
+    repeating-linear-gradient(120deg, rgba(120, 255, 240, 0.2) 0 2px, rgba(120, 255, 240, 0) 2px 12px);
+  animation: portal-spark 1.1s ease-in forwards;
+}
+
+@keyframes portal-veil {
+  0% {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes portal-ring {
+  0% {
+    opacity: 0;
+    transform: scale(0.1);
+  }
+  100% {
+    opacity: 0.9;
+    transform: scale(1.45);
+  }
+}
+
+@keyframes portal-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes portal-spark {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  100% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portal-transition,
+  .portal__veil,
+  .portal__ring,
+  .portal__ring::before,
+  .portal__spark {
+    animation: none !important;
+    transition: none !important;
+  }
+}
