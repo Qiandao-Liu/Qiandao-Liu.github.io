@@ -51,6 +51,12 @@ body.wind-sweep--active .wind-sweep::after {
   animation: cover-fade-in 0.3s ease-out 0.9s forwards;
 }
 
+/* Force background color during transition to prevent flash */
+html.wind-sweep--active,
+body.wind-sweep--active {
+  background-color: #2a2a2a !important;
+}
+
 @keyframes wind-sweep {
   0% {
     transform: translateX(-100%) translateY(-100%);

@@ -22,7 +22,8 @@
 
     event.preventDefault();
 
-    // Trigger wind sweep animation
+    // Trigger wind sweep animation on both html and body
+    document.documentElement.classList.add("wind-sweep--active");
     document.body.classList.add("wind-sweep--active");
 
     // Navigate after animation completes
