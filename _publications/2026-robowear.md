@@ -2,7 +2,7 @@
 title: "RoboWear: Long-horizon Dressing with T-shirts using Learned Cloth Bunching and Force-limited Diffusion Policies"
 collection: publications
 category: conferences
-permalink: /publication/2026-robowear
+# permalink: /publication/2026-robowear  # Disabled - will link to project page in future
 excerpt: 'Robot-assisted dressing using learned cloth manipulation and force-limited diffusion policies.'
 date: 2026-03-01
 venue: 'Under Review at RSS 2026'

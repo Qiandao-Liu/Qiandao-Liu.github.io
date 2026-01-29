@@ -2,7 +2,7 @@
 title: "RAG-Diff: Adapting Diffusion Policies to Dynamic Constraints with Retrieval-Augmented Guidance"
 collection: publications
 category: conferences
-permalink: /publication/2026-ragdiff
+# permalink: /publication/2026-ragdiff  # Disabled - will link to project page in future
 excerpt: 'Adapting diffusion policies for robotic manipulation using retrieval-augmented guidance.'
 date: 2026-03-01
 venue: 'Under Review at RSS 2026'
