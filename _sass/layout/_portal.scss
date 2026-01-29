@@ -1,4 +1,7 @@
-/* Wind sweep transition - academic to art mode */
+/* ========================================
+   Wind Sweep Transition Effect
+   ======================================== */
+
 .wind-sweep {
   position: fixed;
   inset: 0;
@@ -17,9 +20,9 @@
   height: 300%;
   background: linear-gradient(
     135deg,
-    rgba(45, 45, 45, 0.95) 0%,
-    rgba(30, 30, 30, 0.98) 40%,
-    rgba(20, 20, 20, 0.95) 60%,
+    rgba(120, 120, 120, 0.95) 0%,
+    rgba(90, 90, 90, 0.98) 40%,
+    rgba(60, 60, 60, 0.95) 60%,
     transparent 60.5%
   );
   transform: translateX(-100%) translateY(-100%);
@@ -52,9 +55,9 @@ body.wind-sweep--active .wind-sweep::before {
 
 .wind-sweep__particle {
   position: absolute;
-  width: 4px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.6);
+  width: 3px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.5);
   border-radius: 50%;
   opacity: 0;
 }
@@ -78,7 +81,7 @@ body.wind-sweep--active .wind-sweep__particle:nth-child(8) { top: 60%; left: 40%
     transform: translate(0, 0) scale(1);
   }
   20% {
-    opacity: 0.8;
+    opacity: 0.7;
   }
   100% {
     opacity: 0;
@@ -89,29 +92,39 @@ body.wind-sweep--active .wind-sweep__particle:nth-child(8) { top: 60%; left: 40%
 /* Content fade during transition */
 body.wind-sweep--active .masthead,
 body.wind-sweep--active .page__content,
-body.wind-sweep--active .page__footer {
+body.wind-sweep--active .page__footer,
+body.wind-sweep--active #main {
   animation: content-fade 0.6s ease-out forwards;
 }
 
 @keyframes content-fade {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
+  0% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
-/* Art mode styles */
+/* ========================================
+   Art Mode - Gray Theme
+   ======================================== */
+
 body.art-mode {
-  --bg-color: #1a1a1a;
-  --text-color: #e8e8e8;
-  --accent-color: #c9a962;
+  --background-color: #2a2a2a;
+  --text-color: #d0d0d0;
+  --primary-color: #888;
+  --link-color: #999;
+  background-color: #2a2a2a;
 }
 
 body.art-mode .masthead {
-  background: #1a1a1a;
-  border-bottom: 1px solid rgba(201, 169, 98, 0.3);
+  background: #333;
+  border-bottom: 1px solid #444;
+}
+
+body.art-mode .masthead a {
+  color: #ccc;
+}
+
+body.art-mode .masthead a:hover {
+  color: #fff;
 }
 
 /* Hide academic nav items in art mode */
@@ -138,107 +151,8 @@ body.art-mode [data-nav-art] {
 
   body.wind-sweep--active .masthead,
   body.wind-sweep--active .page__content,
-  body.wind-sweep--active .page__footer {
+  body.wind-sweep--active .page__footer,
+  body.wind-sweep--active #main {
     animation: none !important;
   }
-}
-
-/* ========================================
-   Art Mode Homepage Styles
-   ======================================== */
-
-body.art-mode {
-  background: #0d0d0d;
-  color: #e8e8e8;
-  min-height: 100vh;
-}
-
-body.art-mode a {
-  color: #c9a962;
-}
-
-body.art-mode a:hover {
-  color: #e8d5a3;
-}
-
-.art-home {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 4rem 2rem;
-}
-
-.art-home__hero {
-  text-align: center;
-  padding: 6rem 0 4rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 3rem;
-}
-
-.art-home__title {
-  font-size: 3.5rem;
-  font-weight: 300;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: #fff;
-  margin: 0 0 1rem;
-}
-
-.art-home__subtitle {
-  font-size: 1.1rem;
-  font-weight: 300;
-  letter-spacing: 0.2em;
-  color: #888;
-  margin: 0;
-}
-
-.art-home__intro {
-  max-width: 600px;
-  margin: 0 auto 4rem;
-  text-align: center;
-}
-
-.art-home__intro p {
-  font-size: 1.1rem;
-  line-height: 1.8;
-  color: #aaa;
-}
-
-.art-home__gallery-placeholder {
-  text-align: center;
-  padding: 6rem 2rem;
-  border: 1px dashed rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  color: #666;
-}
-
-/* Gallery page */
-.art-gallery {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 4rem 2rem;
-}
-
-.art-gallery__title {
-  font-size: 2rem;
-  font-weight: 300;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #fff;
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.art-gallery__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.art-gallery__placeholder {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 6rem 2rem;
-  border: 1px dashed rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  color: #666;
 }
