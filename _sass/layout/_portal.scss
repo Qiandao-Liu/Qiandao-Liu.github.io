@@ -11,6 +11,7 @@
   visibility: hidden;
 }
 
+/* Wind diagonal sweep */
 .wind-sweep::before {
   content: "";
   position: absolute;
@@ -28,6 +29,15 @@
   transform: translateX(-100%) translateY(-100%);
 }
 
+/* Solid cover that appears at end to prevent flash */
+.wind-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #2a2a2a;
+  opacity: 0;
+}
+
 body.wind-sweep--active .wind-sweep {
   opacity: 1;
   visibility: visible;
@@ -37,12 +47,25 @@ body.wind-sweep--active .wind-sweep::before {
   animation: wind-sweep 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
+body.wind-sweep--active .wind-sweep::after {
+  animation: cover-fade-in 0.3s ease-out 0.9s forwards;
+}
+
 @keyframes wind-sweep {
   0% {
     transform: translateX(-100%) translateY(-100%);
   }
   100% {
     transform: translateX(35%) translateY(35%);
+  }
+}
+
+@keyframes cover-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
   }
 }
 
