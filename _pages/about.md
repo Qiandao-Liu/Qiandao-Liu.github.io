@@ -7,17 +7,25 @@ redirect_from:
   - /about.html
 ---
 
-Hi! I'm Qiandao Liu (刘乾道), an undergraduate student at Cornell University majoring in Computer Science.
+Hi! I'm Qiandao Liu (刘乾道), an undergraduate student at Cornell University majoring in Computer Science with a Robotics Minor.
 
 Research Interests
 ======
-My research interests lie in **Robot Learning**, particularly in developing intelligent systems that can learn from interaction with the physical world. I'm passionate about bridging the gap between theoretical machine learning and real-world robotic applications.
+My research lies at the intersection of robotics, learning, and control. I am focused on enabling robots to perform useful tasks with adaptability, agility, generalizability, and safety, utilizing learning-based methods that scale with data and computation.
+
+Currently, I am a Research Assistant at the [Cornell EmPRISE Lab](https://emprise.cs.cornell.edu/), working with [Professor Tapomayukh Bhattacharjee](https://sites.google.com/site/tapomayukh) on robot learning for assistive care-giving tasks.
 
 Education
 ======
-**Cornell University**
-Bachelor of Science in Computer Science
-Expected Graduation: [Year]
+**Cornell University**, Ithaca, NY (Aug 2023 - Dec 2026 Expected)
+* B.S. in Computer Science, Robotics Minor
+* GPA: 3.82
+
+News
+======
+* **2024**: Awarded Cornell BURE Program with $7,000 research stipend
+* **2024**: 2nd Place at Cornell RCareWorld Hackathon
+* **2023**: Best Backend Award at Cornell AppDev Hackathon
 
 Contact
 ======
