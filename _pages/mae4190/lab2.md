@@ -32,6 +32,8 @@ void setup() {
 
 The Serial Monitor confirms successful initialization with accelerometer and gyroscope readings updating in real-time.
 
+<img src='/images/mae4190/lab2/pass_test_code.png' width='700'>
+
 ### AD0_VAL Discussion
 
 The `AD0_VAL` defines the I2C address of the IMU:
