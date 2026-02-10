@@ -11,26 +11,11 @@ author_profile: true
 
 ### Hardware Connection
 
-The ICM-20948 IMU is connected to the Artemis Nano via I2C (QWIIC connector). The IMU provides 9-DOF sensing: 3-axis accelerometer, 3-axis gyroscope, and 3-axis magnetometer.
+ICM-20948 IMU is connected to Artemis Nano. Provides 9-DOF sensing.
 
 <img src='/images/mae4190/lab2/imu_connection.jpg' width='600'>
 
-### IMU Example Code
-
-After installing the SparkFun ICM-20948 library, the example code successfully reads sensor data:
-
-```cpp
-#include "ICM_20948.h"
-ICM_20948_I2C myICM;
-
-void setup() {
-    Wire.begin();
-    Wire.setClock(400000);
-    myICM.begin(Wire, AD0_VAL);
-}
-```
-
-The Serial Monitor confirms successful initialization with accelerometer and gyroscope readings updating in real-time.
+The Serial Monitor confirms successful initialization with accelerometer and gyroscope readings updating in real-time!
 
 <img src='/images/mae4190/lab2/pass_test_code.png' width='700'>
 
@@ -105,12 +90,12 @@ FFT analysis was performed on stationary accelerometer data to characterize nois
 <img src='/images/mae4190/lab2/fft_vibration.png' width='700'>
 
 **Vibration Noise Analysis:**
-- Tapping/vibrating the table introduces broadband noise
+- Tapping table introduce broadband noise
 - Vibration energy visible across multiple frequencies
 
 ### Low-Pass Filter Design
 
-Based on FFT analysis, a low-pass filter with cutoff frequency of 5-10 Hz effectively removes high-frequency noise while preserving orientation signals.
+Based on FFT analysis a low-pass filter with cutoff frequency of 5-10 Hz effectively removes high-frequency noise while preserving orientation signals.
 
 The filter alpha is computed as:
 ```
@@ -138,12 +123,12 @@ Gyroscope provides angular velocity which is integrated to obtain angles:
 $$\theta(t) = \theta(t-1) + \omega \cdot dt$$
 
 Where:
-- **Pitch (rotation about Y-axis)**: Integrated from gx
-- **Roll (rotation about X-axis)**: Integrated from gy
-- **Yaw (rotation about Z-axis)**: Integrated from gz
+- Pitch (rotation about Y-axis): Integrated from gx
+- Roll (rotation about X-axis): Integrated from gy
+- Yaw (rotation about Z-axis): Integrated from gz
 
 **Coordinate System:**
-- X-axis: Points forward (robot heading)
+- X-axis: Points forward
 - Y-axis: Points left
 - Z-axis: Points up
 
@@ -175,9 +160,9 @@ The raw accelerometer shows significant noise during vibration, while the comple
 
 ### Design Choices
 
-1. **Alpha = 0.05**: Chosen to provide good drift correction while maintaining vibration rejection
-2. **Sample rate ~350 Hz**: Fast enough to capture rapid motions
-3. **Low-pass filter alpha = 0.2**: Removes high-frequency noise from accelerometer
+1. Alpha = 0.05: Chosen to provide good drift correction while maintaining vibration rejection
+2. Sample rate ~350 Hz: Fast enough to capture rapid motions
+3. Low-pass filter alpha = 0.2: Removes high-frequency noise from accelerometer
 
 ---
 
@@ -186,7 +171,7 @@ The raw accelerometer shows significant noise during vibration, while the comple
 ### Speed of Sampling
 
 The IMU data collection achieves:
-- **Sampling rate: 342.7 Hz** (~2.9 ms per sample)
+- Sampling rate: 342.7 Hz (~2.9 ms per sample)
 - This is sufficient for capturing fast robot motions
 
 The sampling rate is limited by:
@@ -206,7 +191,7 @@ float imuPitchComp[MAX_IMU_SIZE], imuRollComp[MAX_IMU_SIZE];
 ```
 
 Each sample includes:
-- Timestamp (milliseconds)
+- Timestamp (ms)
 - Raw accelerometer pitch/roll
 - Complementary filter pitch/roll
 
@@ -232,32 +217,17 @@ Successfully transmitted **5.34 seconds** of IMU data over BLE:
 
 Testing the RC car to observe its dynamics before integrating IMU data:
 
-### Stunt 1: Forward Speed Test
+### Stunt 1: Drift and backhit
 
 <img src='/images/mae4190/lab2/vid_1.gif' width='600'>
 
-The car achieves high forward speed. Observations:
-- Fast acceleration
-- Limited steering at high speed
-- Significant momentum makes stopping difficult
-
-### Stunt 2: Turning Maneuvers
+### Stunt 2: Turning
 
 <img src='/images/mae4190/lab2/vid_2.gif' width='600'>
 
-Testing turning radius and responsiveness:
-- Sharp turns possible at low speed
-- High-speed turns cause significant drift
-- Differential steering via motor speed difference
-
-### Stunt 3: Stunts and Flips
+### Stunt 3: Stunts Flips
 
 <img src='/images/mae4190/lab2/vid_3.gif' width='600'>
-
-The car can perform flips and stunts:
-- Lightweight design enables acrobatic maneuvers
-- IMU data will be crucial for detecting orientation during stunts
-- Recovery from flips is possible due to symmetric design
 
 ---
 
@@ -265,18 +235,11 @@ The car can perform flips and stunts:
 
 ### Key Learnings
 
-1. **Accelerometer alone is noisy** - Vibrations cause significant measurement errors
-2. **Gyroscope alone drifts** - Integration accumulates bias over time
-3. **Complementary filter combines benefits** - Stable, responsive angle estimation
-4. **BLE bandwidth is limited** - Must optimize data transfer for high-rate sensors
-5. **Downsampling enables reliable transfer** - Trade-off between resolution and reliability
-
-### Future Improvements
-
-1. Implement magnetometer for yaw correction (accelerometer cannot sense yaw)
-2. Add Kalman filter for more sophisticated sensor fusion
-3. Optimize BLE packet size for higher throughput
-4. Calibrate gyroscope bias on startup
+1. Accelerometer alone is noisy - Vibrations cause significant measurement errors
+2. Gyroscope alone drifts - Integration accumulates bias over time
+3. Complementary filter combines benefits - Stable responsive angle estimation
+4. BLE bandwidth limited - Must optimize data transfer for high-rate sensors
+5. Downsampling enables reliable transfer - Trade-off between resolution and reliability
 
 ---
 
