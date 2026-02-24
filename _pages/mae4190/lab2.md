@@ -11,7 +11,7 @@ author_profile: true
 
 ### Hardware Connection
 
-The ICM-20948 9-DOF IMU is connected to the Artemis Nano via the QWIIC connector (I2C). The QWIIC interface supplies 3.3V power, GND, SDA, and SCL — no additional wiring needed.
+The ICM-20948 9-DOF IMU is connected to the Artemis Nano via the QWIIC connector (I2C). QWIIC interface supplies 3.3V power, GND, SDA and SCL.
 
 <img src='/images/mae4190/lab2/imu_connection.jpg' width='600'>
 
@@ -19,7 +19,7 @@ After running the `Example1_Basics` sketch, the Serial Monitor confirms successf
 
 <img src='/images/mae4190/lab2/pass_test_code.png' width='700'>
 
-On startup, the LED blinks three times slowly as a visual indicator that the board is running — useful for debugging when the USB cable is disconnected.
+On startup LED blinks three times indicate the board is running.
 
 <details>
 <summary><strong>Arduino: LED startup blink</strong></summary>
@@ -44,11 +44,11 @@ for (int i = 0; i < 3; i++) {
 - **AD0_VAL = 1** → I2C address `0x69` (ADR jumper **open**, default)
 - **AD0_VAL = 0** → I2C address `0x68` (ADR jumper **closed**)
 
-This allows two ICM-20948 sensors to coexist on the same I2C bus with different addresses. For our single-IMU setup, the ADR jumper is left open, so `AD0_VAL = 1` is used.
+This allows two ICM-20948 sensors to coexist on the same I2C bus with different addresses. For single-IMU setup the ADR jumper is left open, so `AD0_VAL = 1` is used.
 
 ### Accelerometer and Gyroscope Data
 
-When rotating or flipping the board, the accelerometer X/Y/Z readings change to reflect the component of gravity projected onto each axis. At rest flat on a table, `az ≈ 1000 mg` (1g) while `ax` and `ay` approach 0. Rotating 90° about the X-axis causes `ay` to swing from 0 to ±1000 mg. The gyroscope outputs angular velocity (dps) on each axis — only the axis aligned with the rotation direction shows a significant value. Rapid accelerations produce large transient spikes in the accelerometer, while slow steady tilts show up clearly in the gyroscope as sustained non-zero readings.
+When rotating or flipping the board, the accelerometer X/Y/Z readings change to reflect the component of gravity projected onto each axis. At rest flat on a table, `az ≈ 1000 mg` while `ax` and `ay` approach 0. Rotating 90° about the X-axis causes `ay` to swing from 0 to ±1000 mg. The gyroscope outputs angular velocity (dps) on each axis. Rapid accelerations produce large transient spikes in the accelerometer, while slow steady tilts show up clearly in the gyroscope as sustained non-zero readings.
 
 <img src='/images/mae4190/lab2/accel_raw.png' width='700'>
 
@@ -136,7 +136,7 @@ FFT analysis was performed on stationary accelerometer pitch data (sampling rate
 
 <img src='/images/mae4190/lab2/fft_stationary.png' width='700'>
 
-In the stationary case, noise energy is concentrated below 10 Hz with no strong peaks — the sensor is well-behaved at rest. To induce vibration noise, the table was tapped gently during a second recording:
+In the stationary case, noise energy is concentrated below 10 Hz with no strong peaks, the sensor is well-behaved at rest. To induce vibration noise, the table was tapped gently during a second recording:
 
 <img src='/images/mae4190/lab2/fft_vibration.png' width='700'>
 
@@ -198,11 +198,10 @@ The alpha value for several candidate cutoff frequencies (at the measured 2.92 m
 <div markdown="1">
 
 ```cpp
-float alpha_lpf = 0.2;  // ~10 Hz cutoff at 342 Hz sample rate
-// Persistent state (initialized to 0)
+float alpha_lpf = 0.2;  // ~10 Hz cutoff
+// Persistent state
 float pitch_a_lpf = 0.0, roll_a_lpf = 0.0;
 
-// Applied each loop iteration after computing pitch_a / roll_a:
 pitch_a_lpf = alpha_lpf * pitch_a + (1.0 - alpha_lpf) * pitch_a_lpf;
 roll_a_lpf  = alpha_lpf * roll_a  + (1.0 - alpha_lpf) * roll_a_lpf;
 ```
@@ -272,7 +271,6 @@ $$\theta[n] = (1-\alpha)\bigl(\theta[n-1] + \omega \cdot d_t\bigr) + \alpha \cdo
 float alpha_comp = 0.05;  // 5% accel weight, 95% gyro weight
 float pitch_comp = 0.0, roll_comp = 0.0;
 
-// Applied each loop after computing pitch_a and integrating gyro:
 pitch_comp = (1.0 - alpha_comp) * (pitch_comp + gx * dt) + alpha_comp * pitch_a;
 roll_comp  = (1.0 - alpha_comp) * (roll_comp  + gy * dt) + alpha_comp * roll_a;
 ```
@@ -316,10 +314,10 @@ void loop() {
     BLEDevice central = BLE.central();
     if (central) {
         while (central.connected()) {
-            write_data();   // periodic BLE heartbeat
+            write_data();   // period heartbeat
             read_data();    // handle any incoming BLE commands
 
-            // Non-blocking IMU collection — only store when data is ready
+            // Non-blocking IMU collection only store when data is ready
             if (collectingIMU) {
                 record_imu_data();  // returns immediately if !dataReady()
             }
@@ -329,7 +327,7 @@ void loop() {
 
 void record_imu_data() {
     if (!imuInitialized || imuArrayFull) return;
-    if (!myICM.dataReady()) return;  // <-- non-blocking check
+    if (!myICM.dataReady()) return;  // non-blocking check
 
     myICM.getAGMT();
     // ... compute angles, store in arrays ...
@@ -356,12 +354,12 @@ float imuRollG[MAX_IMU_SIZE];                // 8 kB
 float imuYawG[MAX_IMU_SIZE];                 // 8 kB
 float imuPitchComp[MAX_IMU_SIZE];            // 8 kB
 float imuRollComp[MAX_IMU_SIZE];             // 8 kB
-// Total for 2000 samples: ~80 kB
+// Total 2000 samples: ~80 kB
 ```
 
-**Data type choice — `float` (4 bytes):** Angle values range from −180° to +180° with sub-degree precision requirements. `int16_t` would save memory but loses the fractional degrees needed for filter accuracy. `double` (8 bytes) provides no practical benefit over `float` for orientation at these noise levels.
+**Data type choice: `float` (4 bytes):** Angle values range from −180° to +180° with sub-degree precision requirements. `int16_t` would save memory but loses the fractional degrees needed for filter accuracy. `double` (8 bytes) provides no practical benefit over `float` for orientation at these noise levels.
 
-**Memory budget:** The Artemis has 384 kB RAM. With ~80 kB for IMU arrays, ~50 kB for code/stack/BLE buffers, there is roughly **250 kB available for data**. Storing all 16 fields as floats costs 64 bytes/sample. That allows ~3900 samples — about **11.4 seconds at 343 Hz**. For the compact 5-field transmit format (timestamp + pitch_a + roll_a + pitch_comp + roll_comp = 20 bytes/sample), the limit is ~12,500 samples (~36 seconds at 343 Hz).
+**Memory budget:** The Artemis has 384 kB RAM. With ~80 kB for IMU arrays, ~50 kB for code/stack/BLE buffers, there is roughly 250 kB available for data. Storing all 16 fields as floats cost 64 bytes/sample. That allows ~3900 samples about 11.4 seconds at 343 Hz. For the compact 5-field transmit format (timestamp + pitch_a + roll_a + pitch_comp + roll_comp = 20 bytes/sample) the limit is ~12,500 samples (~36 seconds at 343 Hz).
 
 ### 5+ Seconds of IMU Data via Bluetooth
 
@@ -375,7 +373,7 @@ After recording, the `SEND_IMU_DATA` command transmits the stored data. To stay 
 case SEND_IMU_DATA:
 {
     int limit = imuArrayFull ? MAX_IMU_SIZE : imuIndex;
-    int step  = 3;  // downsample: ~115 Hz effective
+    int step  = 3;  // downsample ~115 Hz effective
 
     for (int i = 0; i < limit; i += step) {
         tx_estring_value.clear();
@@ -420,11 +418,11 @@ def collect_imu_data(duration_s=5):
     time.sleep(0.5)
     ble.send_command(CMD.SEND_IMU_DATA, "")
 
-    # Wait for transfer to complete
+    # wait for transfer to complete
     time.sleep(duration_s * 0.035 * 100 + 5)
     ble.stop_notify(ble.uuid['RX_STRING'])
 
-    # Parse pipe-delimited format: time_ms|pitch_a|roll_a|pitch_comp|roll_comp
+    # parse pipe-delimited format: time_ms|pitch_a|roll_a|pitch_comp|roll_comp
     rows = []
     for line in imu_data_buffer:
         parts = line.split('|')
@@ -460,7 +458,7 @@ Successfully transmitted **5.34 seconds** of IMU data over BLE (667 samples at a
 
 <img src='/images/mae4190/lab2/vid_3.gif' width='600'>
 
-**Observations:** The car accelerates very quickly — full throttle from rest produces a noticeable forward lurch. Turning at high speed induces sideways drift, especially on smooth floors. The car can flip end-over-end with a sudden reverse input at speed. These dynamics suggest the IMU will need to capture sharp transients (> 10 m/s² acceleration, > 200°/s angular rate) during autonomous operation. The complementary filter's high gyroscope weighting will be important for maintaining a stable angle estimate through these vibration-heavy maneuvers.
+The car accelerates very quickly, full throttle from rest produces a noticeable forward lurch. Turning at high speed induces sideways drift, especially on smooth floors. The car can flip end-over-end with a sudden reverse input at speed. These dynamics suggest the IMU will need to capture super sharp transients during autonomous operation. The complementary filter's high gyroscope weighting will be important, for maintaining a stable angle estimate through these vibration-heavy maneuvers.
 
 ---
 
@@ -477,11 +475,11 @@ Successfully transmitted **5.34 seconds** of IMU data over BLE (667 samples at a
 
 ### Key Learnings
 
-1. **Accelerometer alone is insufficient** — vibration during RC car operation introduces errors of several degrees; the LPF helps but cannot fully eliminate this.
-2. **Gyroscope alone drifts** — bias integration makes it unreliable beyond ~30 s without correction.
-3. **Complementary filter is the right tool** — the 95%/5% gyro/accel split gives responsive, drift-free angle estimates robust to the car's vibrations.
-4. **BLE is the bottleneck, not sampling** — the IMU can sample at 343 Hz but BLE reliable throughput is ~30 packets/s; local buffering and batch transfer are essential.
-5. **Non-blocking loop design matters** — checking `dataReady()` without waiting ensures the main loop stays responsive to BLE commands during recording.
+1. **Accelerometer alone is insufficient:** vibration during RC car operation introduces errors of several degrees; the LPF helps but cannot fully eliminate this.
+2. **Gyroscope alone drifts:** bias integration makes it unreliable beyond ~30 s without correction.
+3. **Complementary filter is the right tool:** the 95%/5% gyro/accel split gives responsive, drift-free angle estimates robust to the car's vibrations.
+4. **BLE is the bottleneck, not sampling:** the IMU can sample at 343 Hz but BLE reliable throughput is ~30 packets/s; local buffering and batch transfer are essential.
+5. **Non-blocking loop design matters:** checking `dataReady()` without waiting ensures the main loop stays responsive to BLE commands during recording.
 
 ---
 
