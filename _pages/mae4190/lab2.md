@@ -23,6 +23,7 @@ On startup, the LED blinks three times slowly as a visual indicator that the boa
 
 <details>
 <summary><strong>Arduino: LED startup blink</strong></summary>
+<div markdown="1">
 
 ```cpp
 // In setup()
@@ -34,6 +35,7 @@ for (int i = 0; i < 3; i++) {
 }
 ```
 
+</div>
 </details>
 
 ### AD0_VAL Discussion
@@ -68,6 +70,7 @@ Using `atan2` (from `math.h`) avoids quadrant ambiguity and handles the case whe
 
 <details>
 <summary><strong>Arduino: pitch and roll from accelerometer</strong></summary>
+<div markdown="1">
 
 ```cpp
 #include <math.h>
@@ -80,6 +83,7 @@ float pitch_a = atan2(ax, sqrt(ay*ay + az*az)) * 180.0 / M_PI;
 float roll_a  = atan2(ay, sqrt(ax*ax + az*az)) * 180.0 / M_PI;
 ```
 
+</div>
 </details>
 
 ### Output at -90, 0, 90 Degrees
@@ -107,6 +111,7 @@ After calibration, errors at the extreme angles are reduced to < 1°. The remain
 
 <details>
 <summary><strong>Python: two-point calibration function</strong></summary>
+<div markdown="1">
 
 ```python
 def two_point_calibration(measured_low, measured_high,
@@ -122,6 +127,7 @@ pitch_scale, pitch_offset = two_point_calibration(-89.05, 86.23)
 roll_scale, roll_offset   = two_point_calibration(-85.51, 86.09)
 ```
 
+</div>
 </details>
 
 ### Noise and Frequency Spectrum Analysis
@@ -138,6 +144,7 @@ Tapping the table introduces broadband noise spanning multiple frequency bands. 
 
 <details>
 <summary><strong>Python: FFT analysis</strong></summary>
+<div markdown="1">
 
 ```python
 import numpy as np
@@ -165,6 +172,7 @@ def plot_fft(df, col, title=None):
     print(f"Sample rate: {fs:.1f} Hz,  Nyquist: {fs/2:.1f} Hz")
 ```
 
+</div>
 </details>
 
 ### Low-Pass Filter Implementation
@@ -187,6 +195,7 @@ The alpha value for several candidate cutoff frequencies (at the measured 2.92 m
 
 <details>
 <summary><strong>Arduino: low-pass filter on accelerometer pitch/roll</strong></summary>
+<div markdown="1">
 
 ```cpp
 float alpha_lpf = 0.2;  // ~10 Hz cutoff at 342 Hz sample rate
@@ -198,6 +207,7 @@ pitch_a_lpf = alpha_lpf * pitch_a + (1.0 - alpha_lpf) * pitch_a_lpf;
 roll_a_lpf  = alpha_lpf * roll_a  + (1.0 - alpha_lpf) * roll_a_lpf;
 ```
 
+</div>
 </details>
 
 ---
@@ -216,6 +226,7 @@ $$\theta[n] = \theta[n-1] + \omega \cdot d_t$$
 
 <details>
 <summary><strong>Arduino: gyroscope angle integration</strong></summary>
+<div markdown="1">
 
 ```cpp
 float gx = myICM.gyrX();  // dps
@@ -232,6 +243,7 @@ roll_g  += gy * dt;
 yaw_g   += gz * dt;
 ```
 
+</div>
 </details>
 
 ### Comparison with Accelerometer
@@ -254,6 +266,7 @@ $$\theta[n] = (1-\alpha)\bigl(\theta[n-1] + \omega \cdot d_t\bigr) + \alpha \cdo
 
 <details>
 <summary><strong>Arduino: complementary filter</strong></summary>
+<div markdown="1">
 
 ```cpp
 float alpha_comp = 0.05;  // 5% accel weight, 95% gyro weight
@@ -264,6 +277,7 @@ pitch_comp = (1.0 - alpha_comp) * (pitch_comp + gx * dt) + alpha_comp * pitch_a;
 roll_comp  = (1.0 - alpha_comp) * (roll_comp  + gy * dt) + alpha_comp * roll_a;
 ```
 
+</div>
 </details>
 
 **Drift test** — IMU held stationary for ~10 seconds:
@@ -295,6 +309,7 @@ The Artemis main loop runs faster than the IMU's internal ODR (Output Data Rate)
 
 <details>
 <summary><strong>Arduino: non-blocking main loop</strong></summary>
+<div markdown="1">
 
 ```cpp
 void loop() {
@@ -321,6 +336,7 @@ void record_imu_data() {
 }
 ```
 
+</div>
 </details>
 
 ### Data Storage Design
@@ -353,6 +369,7 @@ After recording, the `SEND_IMU_DATA` command transmits the stored data. To stay 
 
 <details>
 <summary><strong>Arduino: SEND_IMU_DATA command</strong></summary>
+<div markdown="1">
 
 ```cpp
 case SEND_IMU_DATA:
@@ -378,10 +395,12 @@ case SEND_IMU_DATA:
 }
 ```
 
+</div>
 </details>
 
 <details>
 <summary><strong>Python: notification handler and data collection</strong></summary>
+<div markdown="1">
 
 ```python
 imu_data_buffer = []
@@ -418,6 +437,7 @@ def collect_imu_data(duration_s=5):
         columns=['time_ms', 'pitch_a', 'roll_a', 'pitch_comp', 'roll_comp'])
 ```
 
+</div>
 </details>
 
 Successfully transmitted **5.34 seconds** of IMU data over BLE (667 samples at an effective 124.8 Hz):
