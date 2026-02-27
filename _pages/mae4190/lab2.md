@@ -50,7 +50,6 @@ When rotating or flipping the board, the accelerometer X/Y/Z readings change to 
 
 <img src='/images/mae4190/lab2/gyro_raw.png' width='700'>
 
----
 
 ## Accelerometer
 
@@ -204,7 +203,6 @@ roll_a_lpf  = alpha_lpf * roll_a  + (1.0 - alpha_lpf) * roll_a_lpf;
 </div>
 </details>
 
----
 
 ## Gyroscope
 
@@ -279,7 +277,6 @@ The raw accelerometer spikes by several degrees during each tap. The complementa
 
 For this lab, I used `α_comp = 0.05`, which gave a good balance between drift correction and vibration rejection. I also kept `α_lpf = 0.2` so the accelerometer signal entering the complementary filter was less sensitive to high-frequency shocks. The sample rate stayed around 343 Hz, which was fast enough to capture aggressive motion without large integration error.
 
----
 
 ## Sample Data
 
@@ -424,7 +421,6 @@ Successfully transmitted 5.34 seconds of IMU data over BLE (667 samples at an ef
 
 <img src='/images/mae4190/lab2/5sec_data.png' width='700'>
 
----
 
 ## Record a Stunt
 
@@ -442,7 +438,6 @@ Successfully transmitted 5.34 seconds of IMU data over BLE (667 samples at an ef
 
 The car accelerates hard from rest and has a noticeable forward lurch at full throttle. At higher speed, turning often causes sideways drift, especially on smooth floors. It can also flip end-over-end with a quick reverse input. From these tests, the main takeaway is that the IMU has to deal with sharp transients and vibration-heavy motion, so a gyro-dominant complementary filter is important for keeping the angle estimate stable.
 
----
 
 ## Discussion
 
