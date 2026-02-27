@@ -11,18 +11,18 @@ author_profile: true
 
 ### Hardware Connection
 
-The ICM-20948 9-DOF IMU is connected to the Artemis Nano via the QWIIC connector (I2C). QWIIC interface supplies 3.3V power, GND, SDA and SCL.
+The ICM-20948 9-DOF IMU is connected to Artemis Nano via the QWIIC connector. QWIIC interface supplies 3.3V, GND, SDA and SCL.
 
 <img src='/images/mae4190/lab2/imu_connection.jpg' width='600'>
 
-After running the `Example1_Basics` sketch, the Serial Monitor confirms successful initialization with accelerometer and gyroscope readings updating in real-time:
+After running the `Example1_Basics` sketch, the Serial Monitor confirmed successful initialization, and both accelerometer and gyroscope readings updated in real time:
 
 <img src='/images/mae4190/lab2/pass_test_code.png' width='700'>
 
-On startup LED blinks three times indicate the board is running.
+On startup, the LED blinks three times to show the board is running.
 
 <details>
-<summary><strong>Arduino: LED startup blink</strong></summary>
+<summary>Arduino: LED startup blink</summary>
 <div markdown="1">
 
 ```cpp
@@ -40,11 +40,7 @@ for (int i = 0; i < 3; i++) {
 
 ### AD0_VAL Discussion
 
-`AD0_VAL` defines the last bit of the ICM-20948's I2C address:
-- **AD0_VAL = 1** → I2C address `0x69` (ADR jumper **open**, default)
-- **AD0_VAL = 0** → I2C address `0x68` (ADR jumper **closed**)
-
-This allows two ICM-20948 sensors to coexist on the same I2C bus with different addresses. For single-IMU setup the ADR jumper is left open, so `AD0_VAL = 1` is used.
+`AD0_VAL` sets the last bit of the ICM-20948 I2C address. If `AD0_VAL = 1`, the address is `0x69` (ADR jumper open, which is the default). If `AD0_VAL = 0`, the address is `0x68` (ADR jumper closed). This is useful if two ICM-20948 sensors share one I2C bus, since each sensor can use a different address. In this lab I only used one IMU, so I left the ADR jumper open and used `AD0_VAL = 1`.
 
 ### Accelerometer and Gyroscope Data
 
@@ -69,7 +65,7 @@ $$\text{roll} = \arctan\!\left(\frac{a_y}{\sqrt{a_x^2 + a_z^2}}\right) \times \f
 Using `atan2` (from `math.h`) avoids quadrant ambiguity and handles the case where the denominator approaches zero.
 
 <details>
-<summary><strong>Arduino: pitch and roll from accelerometer</strong></summary>
+<summary>Arduino: pitch and roll from accelerometer</summary>
 <div markdown="1">
 
 ```cpp
@@ -96,7 +92,7 @@ Measurements at the three reference orientations, taken as the mean of 10 consec
 | +90°        | 86.23°           | 86.09°          |
 | -90°        | -89.05°          | -85.51°         |
 
-The accelerometer reads close to ±90° but not exactly, mainly because achieving a perfect right-angle by hand is difficult. The flat (0°) reading shows a small offset bias of about -2.7° for pitch and -0.6° for roll.
+The accelerometer reads close to 90° but not exactly because achieving a perfect right-angle by hand is difficult. The flat (0°) reading shows a small offset bias of about -2.7° for pitch and -0.6° for roll.
 
 ### Accelerometer Accuracy and Two-Point Calibration
 
@@ -104,13 +100,12 @@ A two-point calibration was performed using the ±90° measurements as reference
 
 $$\text{corrected} = \text{scale} \times \text{measured} + \text{offset}$$
 
-**Pitch Calibration:** scale = 1.027, offset = +1.45°
-**Roll Calibration:** scale = 1.049, offset = −0.31°
+For pitch, the fitted values were `scale = 1.027` and `offset = +1.45°`. For roll, they were `scale = 1.049` and `offset = −0.31°`.
 
 After calibration, errors at the extreme angles are reduced to < 1°. The remaining error at 0° is within the expected bias of a consumer-grade MEMS sensor.
 
 <details>
-<summary><strong>Python: two-point calibration function</strong></summary>
+<summary>Python: two-point calibration function</summary>
 <div markdown="1">
 
 ```python
@@ -143,7 +138,7 @@ In the stationary case, noise energy is concentrated below 10 Hz with no strong 
 Tapping the table introduces broadband noise spanning multiple frequency bands. The useful orientation signal (slow tilts) lives below ~5 Hz, while the vibration energy appears primarily above 10 Hz. This motivates a low-pass filter with a cutoff in the 5–10 Hz range.
 
 <details>
-<summary><strong>Python: FFT analysis</strong></summary>
+<summary>Python: FFT analysis</summary>
 <div markdown="1">
 
 ```python
@@ -191,10 +186,10 @@ The alpha value for several candidate cutoff frequencies (at the measured 2.92 m
 | 10 Hz            | 0.155  |
 | 20 Hz            | 0.268  |
 
-**Selected: α = 0.2 (≈ 10 Hz cutoff).** This removes the high-frequency vibration noise visible in the FFT while preserving the full dynamic range of typical orientation changes (< 5 Hz). A lower cutoff (e.g., 1 Hz) would add visible lag during fast tilts; a higher cutoff (e.g., 20 Hz) would leave more vibration noise.
+Selected: α = 0.2 (≈ 10 Hz cutoff). This removes the high-frequency vibration noise visible in the FFT while preserving the full dynamic range of typical orientation changes (< 5 Hz). A lower cutoff (e.g., 1 Hz) would add visible lag during fast tilts; a higher cutoff (e.g., 20 Hz) would leave more vibration noise.
 
 <details>
-<summary><strong>Arduino: low-pass filter on accelerometer pitch/roll</strong></summary>
+<summary>Arduino: low-pass filter on accelerometer pitch/roll</summary>
 <div markdown="1">
 
 ```cpp
@@ -215,16 +210,14 @@ roll_a_lpf  = alpha_lpf * roll_a  + (1.0 - alpha_lpf) * roll_a_lpf;
 
 ### Pitch, Roll, and Yaw from Gyroscope Integration
 
-The gyroscope outputs angular velocity (dps). Integrating over time gives angle estimates:
+The gyroscope outputs angular velocity (dps), so integrating over time gives angle estimates:
 
 $$\theta[n] = \theta[n-1] + \omega \cdot d_t$$
 
-- **Pitch** (rotation about Y): integrated from `gyrX()`
-- **Roll** (rotation about X): integrated from `gyrY()`
-- **Yaw** (rotation about Z): integrated from `gyrZ()`
+In this implementation, pitch (rotation about Y) is integrated from `gyrX()`, roll (rotation about X) from `gyrY()`, and yaw (rotation about Z) from `gyrZ()`.
 
 <details>
-<summary><strong>Arduino: gyroscope angle integration</strong></summary>
+<summary>Arduino: gyroscope angle integration</summary>
 <div markdown="1">
 
 ```cpp
@@ -249,13 +242,7 @@ yaw_g   += gz * dt;
 
 <img src='/images/mae4190/lab2/filter_comparison.png' width='700'>
 
-Key differences between the methods:
-
-- **Gyro integration** responds instantly to motion but accumulates bias drift — even when held perfectly still, the angle slowly walks away from zero over tens of seconds.
-- **Raw accelerometer** has no drift but is noisy, especially during vibration or rapid motion. It also cannot measure yaw.
-- **LPF accelerometer** smooths out vibration but adds lag proportional to the filter cutoff.
-
-**Effect of sampling frequency on gyro accuracy:** Lowering the sampling rate increases `dt`, which amplifies the integration error for any given angular velocity. At the measured ~343 Hz, gyro integration is accurate for short durations (< 10 s). At 50 Hz, the integration error for a fast rotation (e.g., 180°/s) increases by roughly 7× compared to 343 Hz. For the complementary filter to be effective, sampling should be kept high.
+From the comparison plot, the tradeoff is pretty clear. Gyro integration reacts quickly and captures fast motion well, but it drifts over time because bias gets accumulated. The raw accelerometer does not drift, but it gets noisy when the table is tapped or when motion is abrupt, and it cannot provide yaw. The low-pass filtered accelerometer is cleaner, but that filtering also introduces lag. Sampling rate matters a lot for the gyro result: when the rate is reduced, `dt` gets larger and integration error grows faster. At about 343 Hz, the gyro angle is reliable for short windows (around 10 seconds). At 50 Hz, the error for a fast turn (like 180°/s) is much larger, roughly seven times worse than at 343 Hz.
 
 ### Complementary Filter
 
@@ -264,7 +251,7 @@ The complementary filter fuses the two sensors — using the gyroscope for short
 $$\theta[n] = (1-\alpha)\bigl(\theta[n-1] + \omega \cdot d_t\bigr) + \alpha \cdot \theta_\text{accel}$$
 
 <details>
-<summary><strong>Arduino: complementary filter</strong></summary>
+<summary>Arduino: complementary filter</summary>
 <div markdown="1">
 
 ```cpp
@@ -278,22 +265,19 @@ roll_comp  = (1.0 - alpha_comp) * (roll_comp  + gy * dt) + alpha_comp * roll_a;
 </div>
 </details>
 
-**Drift test** — IMU held stationary for ~10 seconds:
+Drift test — IMU held stationary for ~10 seconds:
 
 <img src='/images/mae4190/lab2/drift_test.png' width='700'>
 
 The gyro integral drifts continuously; the complementary filter stays within ~1° of the true angle because the 5% accelerometer weighting slowly corrects any accumulated bias.
 
-**Vibration rejection test** — table tapped while recording:
+Vibration rejection test — table tapped while recording:
 
 <img src='/images/mae4190/lab2/vibration_test.png' width='700'>
 
 The raw accelerometer spikes by several degrees during each tap. The complementary filter's dominant gyroscope weight (95%) suppresses these transients, maintaining a smooth output.
 
-**Design choices:**
-- **α_comp = 0.05**: Balances drift correction (~20 s time constant) against vibration rejection. Higher α (e.g., 0.2) corrects drift faster but lets more vibration noise through.
-- **α_lpf = 0.2**: Pre-filters the accelerometer input to the complementary filter, further reducing vibration sensitivity.
-- **Sample rate ≈ 343 Hz**: Fast enough to accurately integrate sudden angular accelerations; loop runs faster than the IMU produces new data (see below).
+For this lab, I used `α_comp = 0.05`, which gave a good balance between drift correction and vibration rejection. I also kept `α_lpf = 0.2` so the accelerometer signal entering the complementary filter was less sensitive to high-frequency shocks. The sample rate stayed around 343 Hz, which was fast enough to capture aggressive motion without large integration error.
 
 ---
 
@@ -301,12 +285,12 @@ The raw accelerometer spikes by several degrees during each tap. The complementa
 
 ### Speed of Sampling
 
-With all `Serial.print` statements and `delay()` calls removed from the main loop, the Artemis checks `myICM.dataReady()` on every iteration and stores data only when a new sample is available. The measured throughput is **~343 samples/second (~2.9 ms/sample)**.
+With all `Serial.print` statements and `delay()` calls removed from the main loop, the Artemis checks `myICM.dataReady()` on every iteration and stores data only when a new sample is available. The measured throughput is ~343 samples/second (~2.9 ms/sample).
 
 The Artemis main loop runs faster than the IMU's internal ODR (Output Data Rate). `dataReady()` returns false on most loop iterations, so the loop does not block — it just polls and moves on. This non-blocking design is critical: the same loop simultaneously handles BLE `read_data()` without introducing timing jitter.
 
 <details>
-<summary><strong>Arduino: non-blocking main loop</strong></summary>
+<summary>Arduino: non-blocking main loop</summary>
 <div markdown="1">
 
 ```cpp
@@ -357,16 +341,14 @@ float imuRollComp[MAX_IMU_SIZE];             // 8 kB
 // Total 2000 samples: ~80 kB
 ```
 
-**Data type choice: `float` (4 bytes):** Angle values range from −180° to +180° with sub-degree precision requirements. `int16_t` would save memory but loses the fractional degrees needed for filter accuracy. `double` (8 bytes) provides no practical benefit over `float` for orientation at these noise levels.
-
-**Memory budget:** The Artemis has 384 kB RAM. With ~80 kB for IMU arrays, ~50 kB for code/stack/BLE buffers, there is roughly 250 kB available for data. Storing all 16 fields as floats cost 64 bytes/sample. That allows ~3900 samples about 11.4 seconds at 343 Hz. For the compact 5-field transmit format (timestamp + pitch_a + roll_a + pitch_comp + roll_comp = 20 bytes/sample) the limit is ~12,500 samples (~36 seconds at 343 Hz).
+I used `float` (4 bytes) for stored angle data. The angle range is about −180° to +180°, and I still needed fractional precision, so `int16_t` felt too limiting. `double` would double memory use without a real accuracy benefit for this sensor noise level. The Artemis has 384 kB RAM, and these IMU arrays use about 80 kB. After accounting for code, stack, and BLE buffers, there is still enough room for data logging. With all fields stored, capacity is around 3900 samples (about 11.4 s at 343 Hz). If only the compact 5-field format is kept, capacity is roughly 12,500 samples (about 36 s at 343 Hz).
 
 ### 5+ Seconds of IMU Data via Bluetooth
 
 After recording, the `SEND_IMU_DATA` command transmits the stored data. To stay within BLE bandwidth limits, every 3rd sample is sent (downsampling to ~115 Hz effective), with a 30 ms delay between packets to prevent buffer overflow:
 
 <details>
-<summary><strong>Arduino: SEND_IMU_DATA command</strong></summary>
+<summary>Arduino: SEND_IMU_DATA command</summary>
 <div markdown="1">
 
 ```cpp
@@ -397,7 +379,7 @@ case SEND_IMU_DATA:
 </details>
 
 <details>
-<summary><strong>Python: notification handler and data collection</strong></summary>
+<summary>Python: notification handler and data collection</summary>
 <div markdown="1">
 
 ```python
@@ -438,7 +420,7 @@ def collect_imu_data(duration_s=5):
 </div>
 </details>
 
-Successfully transmitted **5.34 seconds** of IMU data over BLE (667 samples at an effective 124.8 Hz):
+Successfully transmitted 5.34 seconds of IMU data over BLE (667 samples at an effective 124.8 Hz):
 
 <img src='/images/mae4190/lab2/5sec_data.png' width='700'>
 
@@ -458,28 +440,17 @@ Successfully transmitted **5.34 seconds** of IMU data over BLE (667 samples at a
 
 <img src='/images/mae4190/lab2/vid_3.gif' width='600'>
 
-The car accelerates very quickly, full throttle from rest produces a noticeable forward lurch. Turning at high speed induces sideways drift, especially on smooth floors. The car can flip end-over-end with a sudden reverse input at speed. These dynamics suggest the IMU will need to capture super sharp transients during autonomous operation. The complementary filter's high gyroscope weighting will be important, for maintaining a stable angle estimate through these vibration-heavy maneuvers.
+The car accelerates hard from rest and has a noticeable forward lurch at full throttle. At higher speed, turning often causes sideways drift, especially on smooth floors. It can also flip end-over-end with a quick reverse input. From these tests, the main takeaway is that the IMU has to deal with sharp transients and vibration-heavy motion, so a gyro-dominant complementary filter is important for keeping the angle estimate stable.
 
 ---
 
 ## Discussion
 
-### Method Comparison
+### Method Comparison and Takeaways
 
-| Method | Strengths | Weaknesses | Best use |
-|---|---|---|---|
-| Raw accelerometer | No drift, absolute reference | Noisy, no yaw | Slow static orientation |
-| LPF accelerometer | Reduced noise | Lag at high α, no yaw | Background correction |
-| Gyroscope integration | Fast, captures yaw | Drift over time | Short-duration dynamics |
-| Complementary filter | Stable + responsive + no drift | Cannot measure yaw | Real-time robot state |
+Across all tests, the raw accelerometer worked well as an absolute reference when the system was mostly static, but it became noisy during vibration and of course could not provide yaw. The LPF version improved that noise issue, but lag became noticeable when motion was faster. Gyroscope integration gave the best short-term motion tracking and captured yaw, but drift accumulated if I let it run too long without correction. The complementary filter gave the best overall behavior in this lab: it stayed responsive during motion while still correcting long-term drift.
 
-### Key Learnings
-
-1. **Accelerometer alone is insufficient:** vibration during RC car operation introduces errors of several degrees; the LPF helps but cannot fully eliminate this.
-2. **Gyroscope alone drifts:** bias integration makes it unreliable beyond ~30 s without correction.
-3. **Complementary filter is the right tool:** the 95%/5% gyro/accel split gives responsive, drift-free angle estimates robust to the car's vibrations.
-4. **BLE is the bottleneck, not sampling:** the IMU can sample at 343 Hz but BLE reliable throughput is ~30 packets/s; local buffering and batch transfer are essential.
-5. **Non-blocking loop design matters:** checking `dataReady()` without waiting ensures the main loop stays responsive to BLE commands during recording.
+The biggest practical lesson was that communication limits were more restrictive than sensing limits. The IMU could sample around 343 Hz, but BLE throughput was much lower, so local buffering plus delayed batch transfer was necessary. The non-blocking loop structure also mattered a lot, because it let BLE command handling and IMU logging run together without stalling each other.
 
 ---
 

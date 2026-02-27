@@ -1,32 +1,15 @@
 ---
 layout: archive
-title: "Lab 3: ToF"
+title: "Lab 3: Time of Flight Sensors"
 permalink: /mae4190/lab3/
 author_profile: true
 ---
 
 {% include base_path %}
 
-## Objective
-[Describe the objective of this lab]
+## Prelab
 
-## Materials
-- [List materials and equipment used]
-
-## Procedure
-[Describe the procedure]
-
-## Results
-[Present your results]
-
-## Code
-[Include relevant code snippets or link to GitHub]
-
-## Media
-[Add images, videos, or other media]
-
-## Conclusion
-[Summarize your conclusions]
+I am using slip week.
 
 ---
 
