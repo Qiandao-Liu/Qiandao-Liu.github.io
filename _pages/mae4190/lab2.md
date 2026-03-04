@@ -449,4 +449,6 @@ The biggest practical lesson was that communication limits were more restrictive
 
 ---
 
+<img src='/images/mae4190/cats/cat3.png' width='300'> <img src='/images/mae4190/cats/cat4.png' width='300'>
+
 [Back to MAE 4190](/mae4190/)

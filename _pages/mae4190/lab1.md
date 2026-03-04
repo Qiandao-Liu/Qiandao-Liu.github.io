@@ -196,4 +196,6 @@ The batch method samples as fast as the loop allows (currently 10ms interval = 1
 
 ---
 
+<img src='/images/mae4190/cats/cat1.png' width='300'> <img src='/images/mae4190/cats/cat2.png' width='300'>
+
 [Back to MAE 4190](/mae4190/)
