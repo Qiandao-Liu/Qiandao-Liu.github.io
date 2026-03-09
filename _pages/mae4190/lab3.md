@@ -23,7 +23,7 @@ I went with address remapping. The catch is that you need XSHUT control on both 
 
 ### Sensor Placement
 
-One sensor faces forward — that's the primary one since the robot mostly drives forward. The second is mounted on the right side to detect walls during mapping in later labs.
+The front-facing sensor is the primary one since the robot mostly drives forward. The second is mounted on the right side to detect walls during mapping in later labs.
 
 Scenarios where the robot will miss obstacles:
 - Objects behind the robot
@@ -42,7 +42,7 @@ Long QWIIC cables go to the ToF sensors so they can reach their mounting spots o
 
 ## Battery
 
-First step was to solder the JST cable to the 650 mAh battery one wire at a time — cutting both at once shorts the terminals. Used heat shrink to insulate each joint.
+First step was to solder the JST cable to the 650 mAh battery one wire at a time, because cutting both at once shorts the terminals. Used heat shrink to insulate each joint.
 
 <img src='/images/mae4190/lab3/battery.jpg' width='600'>
 
@@ -56,7 +56,7 @@ Installed the SparkFun VL53L1X 4m library, cut a long QWIIC cable, and soldered 
 
 Connected it to the QWIIC breakout board on the Artemis to verify the solder joints:
 
-<img src='/images/mae4190/lab3/onlyone.JPG' width='600'>
+<img src='/images/mae4190/lab3/onlytwo.JPG' width='600'>
 
 ## I2C Address Scan
 
@@ -111,7 +111,7 @@ void init_tof_sensors() {
 </div>
 </details>
 
-After this, sensor 1 lives at 0x30 and sensor 2 at 0x29. Since both XSHUT pins are driven LOW every time the Artemis boots, the sensors always start from a clean reset state — hot-restart works fine now.
+After this, sensor 1 lives at 0x30 and sensor 2 at 0x29. Since both XSHUT pins are driven LOW every time the Artemis boots, the sensors always start from a clean reset state, so hot-restart works fine now.
 
 <img src='/images/mae4190/lab3/passtwo.png' width='700'>
 
@@ -130,13 +130,23 @@ I'm using Long mode as the default. The lab arenas are indoors without intense a
 
 ## Characterization — Range, Accuracy, Repeatability
 
-I collected 50 single-shot readings at 5 distances — 100, 500, 900, 1300, and 1700 mm — for both sensors in both Short and Long mode.
+<img src='/images/mae4190/lab3/measure1.png' width='800'>
+
+<img src='/images/mae4190/lab3/measure2.png' width='800'>
+
+I collected 50 single-shot readings at 5 distances: 100, 500, 900, 1300, and 1700 mm, for both sensors in both Short and Long mode.
+
+Later in the lab 4, I also 3D-printed ToF sensor mount to make them on robot solidly.
+
+<img src='/images/mae4190/lab3/3d_printed_tof_sensor_mount_2.JPG' width='800'>
+
+<img src='/images/mae4190/lab3/3d_printed_tof_sensor_mount.JPG' width='800'>
 
 ### Sensor 1 Accuracy
 
 <img src='/images/mae4190/lab3/tof_accuracy_sensor1.png' width='800'>
 
-Sensor 1 reads consistently 15–30 mm below the true value in Long mode, which is a normal mounting offset from the lens cover. Short mode performs similarly within its range, but the 1700 mm readings blow up to ~2200 mm — well beyond Short mode's 1.3 m limit.
+Sensor 1 reads consistently 15–30 mm below the true value in Long mode, which is a normal mounting offset from the lens cover. Short mode performs similarly within its range, but the 1700 mm readings blow up to ~2200 mm, which is well beyond Short mode's 1.3 m limit.
 
 ### Sensor 2 Accuracy
 
