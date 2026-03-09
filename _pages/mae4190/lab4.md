@@ -7,6 +7,13 @@ author_profile: true
 
 {% include base_path %}
 
+My robot **Mulberry** has fully completed its great hardware assembly, and the name is in honor of my cat, Mulberry.
+
+<div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start;">
+  <img src='/images/mae4190/lab4/final_assambled_pic.JPG' width='340'>
+  <img src='/images/mae4190/cats/cat9.png' width='340'>
+</div>
+
 ## Prelab
 
 ### Wiring Plan
