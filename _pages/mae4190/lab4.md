@@ -85,7 +85,7 @@ I also 3D-printed crossbeams to mount the circuit boards inside the chassis. The
 With the motor driver switched from bench supply to the 850 mAh battery, both wheels spin correctly in both directions:
 
 <video width='700' controls>
-  <source src='/images/mae4190/lab4/car_moved_video.MOV' type='video/mp4'>
+  <source src='/images/mae4190/lab4/car_moved_video.mov' type='video/mp4'>
 </video>
 
 ## Lower PWM Limit
