@@ -130,9 +130,9 @@ I'm using Long mode as the default. The lab arenas are indoors without intense a
 
 ## Characterization — Range, Accuracy, Repeatability
 
-<img src='/images/mae4190/lab3/measure1.png' width='800'>
+<img src='/images/mae4190/lab3/measure1.JPG' width='800'>
 
-<img src='/images/mae4190/lab3/measure2.png' width='800'>
+<img src='/images/mae4190/lab3/measure2.JPG' width='800'>
 
 I collected 50 single-shot readings at 5 distances: 100, 500, 900, 1300, and 1700 mm, for both sensors in both Short and Long mode.
 
