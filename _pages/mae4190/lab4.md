@@ -10,8 +10,8 @@ author_profile: true
 My robot **Mulberry** has fully completed its great hardware assembly, and the name is in honor of my cat, Mulberry.
 
 <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start;">
-  <img src='/images/mae4190/lab4/final_assambled_pic.JPG' width='340'>
-  <img src='/images/mae4190/cats/cat9.png' width='340'>
+  <img src='/images/mae4190/lab4/final_assambled_pic.JPG' style='height:260px; width:auto; object-fit:contain;'>
+  <img src='/images/mae4190/cats/cat9.png' style='height:260px; width:auto; object-fit:contain;'>
 </div>
 
 ## Prelab
@@ -37,6 +37,10 @@ I started with the motor driver (VIN) on an external bench supply set to 3.7 V, 
 <img src='/images/mae4190/lab4/motor_driver_board.JPG' width='600'>
 
 For the oscilloscope test I used a standalone sketch that cycles the motor forward and backward at a fixed PWM, with a separate version that holds a constant 30% duty cycle for a clean waveform capture:
+
+<video width='700' controls>
+  <source src='/images/mae4190/lab4/oscilloscope_video.mp4' type='video/mp4'>
+</video>
 
 <details>
 <summary>Arduino: motor_test.ino — forward/backward cycle</summary>
@@ -92,10 +96,6 @@ void loop() {
 The oscilloscope shows the two PWM channels are 180° out of phase. That makes sense: the two motors are mounted facing opposite directions in the chassis, so driving them both "forward" electrically means one spins clockwise and the other counterclockwise.
 
 <img src='/images/mae4190/lab4/oscilloscope_figure.png' width='700'>
-
-<video width='700' controls>
-  <source src='/images/mae4190/lab4/oscilloscope_video.mp4' type='video/mp4'>
-</video>
 
 
 ## Assembly
