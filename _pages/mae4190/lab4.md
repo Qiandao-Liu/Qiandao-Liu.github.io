@@ -55,7 +55,7 @@ The oscilloscope shows the two PWM channels are 180° out of phase. That makes s
 <img src='/images/mae4190/lab4/oscilloscope_figure.png' width='700'>
 
 <video width='700' controls>
-  <source src='/images/mae4190/lab4/oscilloscope_video.MOV' type='video/mp4'>
+  <source src='/images/mae4190/lab4/oscilloscope_video.MOV' type='video/quicktime'>
 </video>
 
 ## Assembly
@@ -85,7 +85,7 @@ I also 3D-printed crossbeams to mount the circuit boards inside the chassis. The
 With the motor driver switched from bench supply to the 850 mAh battery, both wheels spin correctly in both directions:
 
 <video width='700' controls>
-  <source src='/images/mae4190/lab4/car_moved_video.mov' type='video/mp4'>
+  <source src='/images/mae4190/lab4/car_moved_video.MOV' type='video/quicktime'>
 </video>
 
 ## Lower PWM Limit
@@ -133,13 +133,13 @@ I swept through calibration factors over BLE and measured drift direction for ea
 A factor of 0.95 slows the right motor by 5%, which compensates for the imbalance. Before calibration:
 
 <video width='700' controls>
-  <source src='/images/mae4190/lab4/calibration_not_straight_but_left.mov' type='video/mp4'>
+  <source src='/images/mae4190/lab4/calibration_not_straight_but_left.mov' type='video/quicktime'>
 </video>
 
 After setting `motorCalFactor = 0.95`, the robot tracked straight for over 2 m:
 
 <video width='700' controls>
-  <source src='/images/mae4190/lab4/calibration_straight.mov' type='video/mp4'>
+  <source src='/images/mae4190/lab4/calibration_straight.mov' type='video/quicktime'>
 </video>
 
 ## Open Loop Control
@@ -199,7 +199,7 @@ time.sleep(2.5)
 The right turn landed at −90.5° and the left turn at +90.2°, both very close to target. The car ran the full sequence untethered after the single Python trigger.
 
 <video width='700' controls>
-  <source src='/images/mae4190/lab4/open_loop_control.MOV' type='video/mp4'>
+  <source src='/images/mae4190/lab4/open_loop_control.MOV' type='video/quicktime'>
 </video>
 
 ---
