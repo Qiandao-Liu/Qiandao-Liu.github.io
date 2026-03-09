@@ -448,6 +448,7 @@ Across all tests, the raw accelerometer worked well as an absolute reference whe
 The biggest practical lesson was that communication limits were more restrictive than sensing limits. The IMU could sample around 343 Hz, but BLE throughput was much lower, so local buffering plus delayed batch transfer was necessary. The non-blocking loop structure also mattered a lot, because it let BLE command handling and IMU logging run together without stalling each other.
 
 ---
+Meet my cat Mulberry! 🐱
 
 <img src='/images/mae4190/cats/cat3.png' width='300'> <img src='/images/mae4190/cats/cat4.png' width='300'>
 

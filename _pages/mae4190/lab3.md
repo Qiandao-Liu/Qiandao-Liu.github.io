@@ -269,8 +269,7 @@ Both datasets on one figure — left axis is distance (mm), right axis is angle 
 <img src='/images/mae4190/lab3/tof_imu_combined.png' width='900'>
 
 ---
-
-watch my cat Mulberry 🐱
+Meet my cat Mulberry! 🐱
 
 <img src='/images/mae4190/cats/cat4.png' width='400'>
 <img src='/images/mae4190/cats/cat11.png' width='400'>
