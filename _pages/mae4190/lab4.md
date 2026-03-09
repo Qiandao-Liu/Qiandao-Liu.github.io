@@ -96,6 +96,8 @@ For forward motion, the robot consistently moved at PWM 40, displacing about 2.0
 
 For on-axis turns, the robot reliably completed a detectable rotation at PWM 140 (4.6° in 1 second). The 135–139 range was inconsistent, so 140 is the practical minimum.
 
+<img src='/images/mae4190/lab4/lab4_pwm_lower_limit.png' width='700'>
+
 The higher threshold for turns makes sense: in a turn one wheel has to overcome static friction while being driven against the other wheel's contact patch. That takes more torque than forward motion where both wheels cooperate.
 
 ## Straight-Line Calibration
