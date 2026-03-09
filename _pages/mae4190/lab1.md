@@ -195,7 +195,7 @@ The batch method samples as fast as the loop allows (currently 10ms interval = 1
 4. **Notification handlers enable non-blocking I/O** - Critical for responsive real-time systems
 
 ---
-Meet my cat Mulberry! 🐱
+Meet with my cat Mulberry! 🐱
 
 <img src='/images/mae4190/cats/cat1.png' width='300'> <img src='/images/mae4190/cats/cat2.png' width='300'>
 
