@@ -64,41 +64,6 @@ Ran the I2C scanner example. The sensor shows up at 0x29, not 0x52. This is just
 
 <img src='/images/mae4190/lab3/passone.png' width='700'>
 
-## Distance Mode Comparison
-
-The VL53L1X has two main distance modes:
-
-| Mode | Max Range | Timing Budget | Ambient Light Sensitivity |
-|------|-----------|---------------|--------------------------|
-| Short | ~1.3 m | ≤ 20 ms | Low |
-| Long | ~4 m | ≥ 33 ms | Higher |
-
-Short mode is more robust in bright light but tops out at 1.3 m. Long mode reaches 4 m but gets noisy past ~2 m in direct sunlight.
-
-I'm using Long mode as the default. The lab arenas are indoors without intense ambient IR, and 4 m range is more useful than extra noise immunity. One thing I learned the hard way: you must call `stopRanging()` before switching modes. Calling `setDistanceMode()` while actively ranging corrupts internal timing registers and causes a ~130 mm systematic offset on every subsequent reading.
-
-## Characterization — Range, Accuracy, Repeatability
-
-I collected 50 single-shot readings at 5 distances — 100, 500, 900, 1300, and 1700 mm — for both sensors in both Short and Long mode.
-
-### Sensor 1 Accuracy
-
-<img src='/images/mae4190/lab3/tof_accuracy_sensor1.png' width='800'>
-
-Sensor 1 reads consistently 15–30 mm below the true value in Long mode, which is a normal mounting offset from the lens cover. Short mode performs similarly within its range, but the 1700 mm readings blow up to ~2200 mm — well beyond Short mode's 1.3 m limit.
-
-### Sensor 2 Accuracy
-
-<img src='/images/mae4190/lab3/tof_accuracy_sensor2.png' width='800'>
-
-Sensor 2 is more accurate in absolute terms, with error within ±15 mm from 100–1300 mm. Both modes blow up at 1700 mm for the same reason.
-
-### Repeatability
-
-σ is under 2 mm for all distances up to 1300 mm. The 1700 mm histograms are widely spread or bimodal, confirming the sensor shouldn't be relied on past its rated range.
-
-<img src='/images/mae4190/lab3/tof_repeatability.png' width='900'>
-
 ## Two ToF Sensors Simultaneously
 
 Both XSHUT wires wired up, sensor 1 to A1, sensor 2 to A0. The init sequence holds both LOW at startup, then releases them one at a time:
@@ -149,6 +114,41 @@ void init_tof_sensors() {
 After this, sensor 1 lives at 0x30 and sensor 2 at 0x29. Since both XSHUT pins are driven LOW every time the Artemis boots, the sensors always start from a clean reset state — hot-restart works fine now.
 
 <img src='/images/mae4190/lab3/passtwo.png' width='700'>
+
+## Distance Mode Comparison
+
+The VL53L1X has two main distance modes:
+
+| Mode | Max Range | Timing Budget | Ambient Light Sensitivity |
+|------|-----------|---------------|--------------------------|
+| Short | ~1.3 m | ≤ 20 ms | Low |
+| Long | ~4 m | ≥ 33 ms | Higher |
+
+Short mode is more robust in bright light but tops out at 1.3 m. Long mode reaches 4 m but gets noisy past ~2 m in direct sunlight.
+
+I'm using Long mode as the default. The lab arenas are indoors without intense ambient IR, and 4 m range is more useful than extra noise immunity. One thing I learned the hard way: you must call `stopRanging()` before switching modes. Calling `setDistanceMode()` while actively ranging corrupts internal timing registers and causes a ~130 mm systematic offset on every subsequent reading.
+
+## Characterization — Range, Accuracy, Repeatability
+
+I collected 50 single-shot readings at 5 distances — 100, 500, 900, 1300, and 1700 mm — for both sensors in both Short and Long mode.
+
+### Sensor 1 Accuracy
+
+<img src='/images/mae4190/lab3/tof_accuracy_sensor1.png' width='800'>
+
+Sensor 1 reads consistently 15–30 mm below the true value in Long mode, which is a normal mounting offset from the lens cover. Short mode performs similarly within its range, but the 1700 mm readings blow up to ~2200 mm — well beyond Short mode's 1.3 m limit.
+
+### Sensor 2 Accuracy
+
+<img src='/images/mae4190/lab3/tof_accuracy_sensor2.png' width='800'>
+
+Sensor 2 is more accurate in absolute terms, with error within ±15 mm from 100–1300 mm. Both modes blow up at 1700 mm for the same reason.
+
+### Repeatability
+
+σ is under 2 mm for all distances up to 1300 mm. The 1700 mm histograms are widely spread or bimodal, confirming the sensor shouldn't be relied on past its rated range.
+
+<img src='/images/mae4190/lab3/tof_repeatability.png' width='900'>
 
 ## Non-Blocking Loop Speed
 
@@ -219,17 +219,17 @@ case SEND_TOF_DATA: {
 
 <img src='/images/mae4190/lab3/tof_distance_vs_time.png' width='800'>
 
-Both sensors track distance changes over time. The gaps in sensor 2 are where it wasn't ready at the exact moment sensor 1 fired — normal since they run asynchronously.
+Both sensors track distance changes over time. I moved the car forward and backward.
 
 ## IMU Angle vs Time
 
 <img src='/images/mae4190/lab3/imu_angle_vs_time.png' width='800'>
 
-Pitch and roll from the complementary filter vs raw accelerometer. The filter smooths accelerometer noise while avoiding gyroscope drift accumulation.
+I moved the car forward and backward. Pitch and roll from the complementary filter vs raw accelerometer. The filter smooths accelerometer noise while avoiding gyroscope drift accumulation. 
 
 ## Combined ToF + IMU
 
-Both datasets on one figure with dual y-axes — distance on the left, angle on the right. The IMU trace extends further since it samples at a higher rate.
+Both datasets on one figure with dual y-axes, distance on the left, angle on the right. The IMU trace seems more frenquent since it samples at a higher rate.
 
 <img src='/images/mae4190/lab3/tof_imu_combined.png' width='900'>
 
