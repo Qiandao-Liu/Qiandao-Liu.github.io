@@ -188,6 +188,8 @@ void record_tof_data() {
 
 Each loop iteration takes on the order of tens of microseconds. The limiting factor is the ToF sensor ranging time: Long mode uses a 33 ms timing budget, capping the data rate at ~30 Hz theoretically and ~10 Hz in practice. The IMU runs faster since it just reads an I2C register, bounded by its ODR at ~100 Hz.
 
+<img src='/images/mae4190/lab3/runtime.png' width='900'>
+
 ## Distance vs Time
 
 Sent `START_TOF_RECORDING`, moved the sensors around for ~6 seconds, then retrieved the data over BLE.
