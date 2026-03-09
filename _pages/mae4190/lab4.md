@@ -29,21 +29,53 @@ I started with the motor driver (VIN) on an external bench supply set to 3.7 V, 
 
 <img src='/images/mae4190/lab4/motor_driver_board.JPG' width='600'>
 
+For the oscilloscope test I used a standalone sketch that cycles the motor forward and backward at a fixed PWM, with a separate version that holds a constant 30% duty cycle for a clean waveform capture:
+
 <details>
-<summary>Arduino: basic PWM output to motor driver</summary>
+<summary>Arduino: motor_test.ino — forward/backward cycle</summary>
 <div markdown="1">
 
 ```cpp
-#define L_FWD  3
-#define L_BWD  14
-#define R_FWD  16
-#define R_BWD  15
+#define L_FWD  3    // Left  motor forward  (AIN1)
+#define L_BWD  14   // Left  motor backward (AIN2)
+#define R_FWD  16   // Right motor forward  (BIN1)
+#define R_BWD  15   // Right motor backward (BIN2)
+
+#define SPEED  150  // PWM 0–255
 
 void motorsForward(int speed) {
-    analogWrite(L_FWD, speed);
-    analogWrite(R_FWD, speed);
-    analogWrite(L_BWD, 0);
-    analogWrite(R_BWD, 0);
+    analogWrite(L_FWD, speed);  analogWrite(L_BWD, 0);
+    analogWrite(R_FWD, speed);  analogWrite(R_BWD, 0);
+}
+void motorsBackward(int speed) {
+    analogWrite(L_BWD, speed);  analogWrite(L_FWD, 0);
+    analogWrite(R_BWD, speed);  analogWrite(R_FWD, 0);
+}
+void motorsStop() {
+    analogWrite(L_FWD, 0); analogWrite(L_BWD, 0);
+    analogWrite(R_FWD, 0); analogWrite(R_BWD, 0);
+}
+
+void loop() {
+    motorsForward(SPEED);   delay(5000);
+    motorsStop();           delay(1000);
+    motorsBackward(SPEED);  delay(5000);
+    motorsStop();           delay(1000);
+}
+```
+
+</div>
+</details>
+
+<details>
+<summary>Arduino: fixed 30% duty cycle for oscilloscope waveform</summary>
+<div markdown="1">
+
+```cpp
+void loop() {
+    // 30% duty cycle — PWM value 75 out of 255
+    analogWrite(L_FWD, 75);
+    analogWrite(R_FWD, 75);
 }
 ```
 
@@ -55,8 +87,9 @@ The oscilloscope shows the two PWM channels are 180° out of phase. That makes s
 <img src='/images/mae4190/lab4/oscilloscope_figure.png' width='700'>
 
 <video width='700' controls>
-  <source src='/images/mae4190/lab4/oscilloscope_video.MOV' type='video/quicktime'>
+  <source src='/images/mae4190/lab4/oscilloscope_video.mp4' type='video/mp4'>
 </video>
+
 
 ## Assembly
 
@@ -85,7 +118,7 @@ I also 3D-printed crossbeams to mount the circuit boards inside the chassis. The
 With the motor driver switched from bench supply to the 850 mAh battery, both wheels spin correctly in both directions:
 
 <video width='700' controls>
-  <source src='/images/mae4190/lab4/car_moved_video.MOV' type='video/quicktime'>
+  <source src='/images/mae4190/lab4/car_moved_video.mp4' type='video/mp4'>
 </video>
 
 ## Lower PWM Limit
@@ -133,13 +166,13 @@ I swept through calibration factors over BLE and measured drift direction for ea
 A factor of 0.95 slows the right motor by 5%, which compensates for the imbalance. Before calibration:
 
 <video width='700' controls>
-  <source src='/images/mae4190/lab4/calibration_not_straight_but_left.mov' type='video/quicktime'>
+  <source src='/images/mae4190/lab4/calibration_not_straight_but_left.mp4' type='video/mp4'>
 </video>
 
 After setting `motorCalFactor = 0.95`, the robot tracked straight for over 2 m:
 
 <video width='700' controls>
-  <source src='/images/mae4190/lab4/calibration_straight.mov' type='video/quicktime'>
+  <source src='/images/mae4190/lab4/calibration_straight.mp4' type='video/mp4'>
 </video>
 
 ## Open Loop Control
@@ -199,7 +232,7 @@ time.sleep(2.5)
 The right turn landed at −90.5° and the left turn at +90.2°, both very close to target. The car ran the full sequence untethered after the single Python trigger.
 
 <video width='700' controls>
-  <source src='/images/mae4190/lab4/open_loop_control.MOV' type='video/quicktime'>
+  <source src='/images/mae4190/lab4/open_loop_control.mp4' type='video/mp4'>
 </video>
 
 ---

@@ -36,7 +36,7 @@ Scenarios where the robot will miss obstacles:
 
 <img src='/images/mae4190/lab3/lab3_fig.png' width='700'>
 
-<img src='/images/mae4190/lab3/lab3_fig2.png' width='700' style='transform: rotate(-90deg); display: block; margin: 350px auto;'>
+<img src='/images/mae4190/lab3/lab3_fig2.png' width='700'>
 
 Long QWIIC cables go to the ToF sensors so they can reach their mounting spots on the car. The IMU uses a shorter cable since it stays close to the Artemis. XSHUT wires are soldered permanently to each sensor and connect via female-to-female jumper wires to A0/A1 on the Artemis.
 
