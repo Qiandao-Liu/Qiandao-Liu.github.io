@@ -241,7 +241,7 @@ I moved the car forward and backward. Pitch and roll from the complementary filt
 
 ## Combined ToF + IMU
 
-Both datasets on one figure with dual y-axes, distance on the left, angle on the right. The IMU trace seems more frenquent since it samples at a higher rate.
+Both datasets on one figure with dual y-axes, distance on the left, angle on the right. The IMU trace seems more frenquent since it samples at a higher rate (10Hz vs. 50Hz).
 
 <img src='/images/mae4190/lab3/tof_imu_combined.png' width='900'>
 
