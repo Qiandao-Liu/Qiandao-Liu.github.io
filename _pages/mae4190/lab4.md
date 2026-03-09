@@ -11,7 +11,7 @@ author_profile: true
 
 ### Wiring Plan
 
-For PWM output I needed pins that support `analogWrite`. Pins 8 and 10 are not PWM-capable on the Artemis Nano, so I ended up using A3 (3), A14 (14), A15 (15), and A16 (16). These four sit on the opposite side of the board from the USB programming port, so the port can face the edge of the chassis while the motor wires run toward the center where the motors are.
+For PWM output I needed pins that support `analogWrite`. Pins 8 and 10 are not PWM-capable on the Artemis Nano, so I ended up using A3, A14, A15 and A16. These four sit on the opposite side of the board from the USB programming port, so the port can face the edge of the chassis while the motor wires run toward the center where the motors are.
 
 Each dual motor driver runs in parallel-coupled mode: both input channels tied together, both output channels tied together. This doubles the average current the chip can deliver without overheating, since both H-bridge halves share the load. Left motor uses pins 3 and 14, right motor uses pins 15 and 16.
 
@@ -19,7 +19,7 @@ Each dual motor driver runs in parallel-coupled mode: both input channels tied t
 
 ### Battery Separation
 
-The motors run off an 850 mAh Li-Ion and the Artemis runs off its own 650 mAh battery. The main reason isn't just capacity — it's electrical isolation. When a motor suddenly draws a spike of current, the battery voltage can dip momentarily. If everything shares one battery, that dip can pull the Artemis supply below its minimum operating voltage and crash it. Separate supplies prevent that. They also let each battery be sized and charged for its actual load.
+The motors run off an 850 mAh Li-Ion and the Artemis runs off its own 650 mAh battery. The main reason isn't just capacity but also electrical isolation. When a motor suddenly draws a huge spike of current, the battery voltage can dip momentarily. If everything shares one battery, that dip can pull the Artemis supply below its minimum operating voltage and crash it. Separate supplies prevent that. They also let each battery be sized and charged for its actual load.
 
 <img src='/images/mae4190/lab4/two_batteries_placed_inside_the_car.JPG' width='600'>
 
