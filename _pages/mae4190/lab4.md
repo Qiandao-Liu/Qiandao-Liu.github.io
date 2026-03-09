@@ -32,7 +32,7 @@ The motors run off an 850 mAh Li-Ion and the Artemis runs off its own 650 mAh ba
 
 ## Power Supply and Oscilloscope
 
-I started with the motor driver (VIN) on an external bench supply set to 3.7 V, matching the Li-Ion battery voltage. I started at 1 mA current limit, which wasn't enough to drive the motor at all. I stepped it up gradually and found 3 mA was sufficient for the oscilloscope tests with the motor running freely.
+I started with the motor driver (VIN) on an external bench supply set to 3.7 V, matching the Li-Ion battery voltage. I started at 100 mA current limit, which wasn't enough to drive the motor at all. I stepped it up gradually and found 300 mA was sufficient for the oscilloscope tests with the motor running freely.
 
 <img src='/images/mae4190/lab4/motor_driver_board.JPG' width='600'>
 
