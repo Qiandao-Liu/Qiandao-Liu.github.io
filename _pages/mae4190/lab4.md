@@ -36,7 +36,7 @@ I started with the motor driver (VIN) on an external bench supply set to 3.7 V, 
 
 <img src='/images/mae4190/lab4/motor_driver_board.JPG' width='600'>
 
-For the oscilloscope test I used a standalone sketch that cycles the motor forward and backward at a fixed PWM, with a separate version that holds a constant 30% duty cycle for a clean waveform capture:
+For the oscilloscope test I used a standalone sketch that cycles the motor forward and backward at a fixed PWM, with a separate version that holds a constant 30 to 256 PWM cycle for a clean waveform capture:
 
 <video width='700' controls>
   <source src='/images/mae4190/lab4/oscilloscope_video.mp4' type='video/mp4'>
@@ -84,7 +84,7 @@ void loop() {
 
 ```cpp
 void loop() {
-    // 30% duty cycle — PWM value 75 out of 255
+    // around 30% duty cycle — PWM value 75 out of 255
     analogWrite(L_FWD, 75);
     analogWrite(R_FWD, 75);
 }
