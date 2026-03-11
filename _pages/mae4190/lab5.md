@@ -9,7 +9,7 @@ author_profile: true
 
 Goal: drive the robot as fast as possible toward a wall and stop exactly 1 ft (304 mm) away using TOF sensor feedback. I tested P, PD, and PID controllers at three speed levels each and added linear extrapolation to decouple the PID loop rate from the sensor rate.
 
-Setup: the robot starts 75 inches (1905 mm) from the wall every run. I placed a yoga mat against the wall as a crash buffer during high-speed tuning.
+Setup: the robot starts 75 inches (1905 mm) from the wall every run. I placed a yoga mat against the wall as a crash buffer during high-speed tuning. For each control (P, PD, PID), I tested 3 different PWM (40, 80 ,120), and each one with 3 trials for robustness. 
 
 ## Prelab
 
