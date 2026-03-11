@@ -13,23 +13,45 @@ Setup: the robot starts 75 inches (1905 mm) from the wall every run. I placed a 
 
 ## Prelab
 
-The BLE debugging flow has three stages. First, a Python `PID_START` command resets all state and starts the 10-second run on the Artemis. Second, the Artemis runs the controller, logs every TOF sample and PID sample into fixed arrays, and hard-stops on timeout even if BLE drops. Third, after Python sends `GET_PID_DATA`, the Artemis streams back all stored samples in `TOF|dist|extrap|time` and `PID|error|pwm|time` format, which Python parses into DataFrames.
+The BLE debugging flow has three stages. Python sends `PID_START` to reset the controller state and begin a fixed 10 s run on the Artemis. During the run, the Artemis logs every TOF sample and every PID iteration into fixed arrays and still hard-stops on timeout even if BLE drops. After Python sends `GET_PID_DATA`, the Artemis streams the buffered records back as tagged strings: `TOF|dist_mm|extrap_flag|time_ms`, `PID|error_mm|motor_pwm|time_ms`, and a final `PID_END|tof_count|pid_count` marker. Python subscribes to `RX_STRING`, appends each notification line to a list, then splits the lines into TOF and PID tables after `PID_END` arrives.
 
 Gains are tunable over BLE with `SET_PID_GAINS kp|ki|kd|setpoint` so I never had to reflash between tuning runs.
 
 <details>
-<summary>Arduino: PID_START handler</summary>
+<summary>Arduino: GET_PID_DATA packet format</summary>
 <div markdown="1">
 
 ```cpp
-case PID_START:
+case GET_PID_DATA:
 {
-    pid_e_pos = 0; pid_tof_pos = 0;
-    pid_I = 0.0f; pid_dF = 0.0f; pid_last_e = 0.0f;
-    tof_extrap_valid = false; tof_current = -1.0f;
-    pid_start_ms = millis();
-    pid_last_t   = millis();
-    pid_running  = true;
+    for (int i = 0; i < pid_tof_pos; i++) {
+        tx_estring_value.clear();
+        tx_estring_value.append("TOF|");
+        tx_estring_value.append((int)pid_tof_dist[i]);
+        tx_estring_value.append("|");
+        tx_estring_value.append((int)pid_tof_extrap[i]);
+        tx_estring_value.append("|");
+        tx_estring_value.append((int)pid_tof_t[i]);
+        tx_characteristic_string.writeValue(tx_estring_value.c_str());
+        BLE.poll();
+    }
+    for (int i = 0; i < pid_e_pos; i++) {
+        tx_estring_value.clear();
+        tx_estring_value.append("PID|");
+        tx_estring_value.append((int)pid_e_hist[i]);
+        tx_estring_value.append("|");
+        tx_estring_value.append((int)pid_motor_hist[i]);
+        tx_estring_value.append("|");
+        tx_estring_value.append((int)pid_t_hist[i]);
+        tx_characteristic_string.writeValue(tx_estring_value.c_str());
+        BLE.poll();
+    }
+    tx_estring_value.clear();
+    tx_estring_value.append("PID_END|");
+    tx_estring_value.append(pid_tof_pos);
+    tx_estring_value.append("|");
+    tx_estring_value.append(pid_e_pos);
+    tx_characteristic_string.writeValue(tx_estring_value.c_str());
     break;
 }
 ```
@@ -38,17 +60,29 @@ case PID_START:
 </details>
 
 <details>
-<summary>Python: run and retrieve experiment</summary>
+<summary>Python: notification handler and parser</summary>
 <div markdown="1">
 
 ```python
-def run_pid_experiment(run_duration_s=10.0, label=""):
-    ble.start_notify(ble.uuid['RX_STRING'], _pid_notify_handler)
-    ble.send_command(CMD.PID_START, "")
-    time.sleep(run_duration_s + 1.0)
-    ble.send_command(CMD.PID_STOP, "")
-    ble.send_command(CMD.GET_PID_DATA, "")
-    # wait for PID_END marker, then parse TOF| and PID| lines
+_pid_buf, _pid_done = [], False
+
+def _pid_notify_handler(uuid, bytearray_data):
+    global _pid_buf, _pid_done
+    line = ble.bytearray_to_string(bytearray_data).strip()
+    _pid_buf.append(line)
+    if line.startswith("PID_END"):
+        _pid_done = True
+
+def parse_pid_data(buf):
+    tof_rows, pid_rows = [], []
+    for line in buf:
+        if line.startswith("TOF|"):
+            _, dist, extrap, t = line.split("|")
+            tof_rows.append((int(dist), bool(int(extrap)), int(t)))
+        elif line.startswith("PID|"):
+            _, err, pwm, t = line.split("|")
+            pid_rows.append((int(err), int(pwm), int(t)))
+    return tof_rows, pid_rows
 ```
 
 </div>
@@ -92,7 +126,7 @@ At 40 PWM the robot moved slowly and coasted to the wall rather than using rever
 
 ## PD Control
 
-Adding derivative with `KD = 0.004` (ratio KD/KP ≈ 0.27) fixes the high-speed crash problem. The derivative term sees the large negative rate of change as the robot rushes toward the wall and applies braking force proportional to approach speed. A low-pass filter with α = 0.9 suppresses noise on the derivative: `pid_dF = 0.9 * pid_dF + 0.1 * d_raw`.
+For the final controller choice, I first decided against PI. In my past projects the integral term has usually been the trickiest branch to tune because wind-up and slow bias accumulation can easily make the transient response worse before they fix the steady-state error. PD is usually enough to get good wall-approach behavior because proportional handles distance error and derivative damps the overshoot. Adding derivative with `KD = 0.004` (ratio KD/KP ≈ 0.27) fixes the high-speed crash problem. The derivative term sees the large negative rate of change as the robot rushes toward the wall and applies braking force proportional to approach speed. A low-pass filter with α = 0.9 suppresses noise on the derivative: `pid_dF = 0.9 * pid_dF + 0.1 * d_raw`.
 
 At 120 PWM the robot now brakes smoothly and stops within 21 mm of the setpoint. The motor output plot shows active reverse braking at high speed, which P-only couldn't do. PD performance at all three speed levels was already very close to PID, so the derivative term is doing most of the heavy lifting.
 
@@ -124,7 +158,7 @@ At 120 PWM the robot now brakes smoothly and stops within 21 mm of the setpoint.
 
 ## PID Control
 
-Adding `KI = 0.001` provides a gentle integrator that corrects the small residual steady-state error P and D can't fix on their own. The integral is clamped to ±1000 mm·s to prevent wind-up. PID final error in the logged run was -18 mm, compared to -104 mm for P and +21 mm for PD.
+I still implemented full PID because I am in the 5000-level track and wanted to test whether a small integrator would improve the final settle without ruining the transient. Adding `KI = 0.001` provides a gentle integrator that corrects the small residual steady-state error P and D can't fix on their own, while the clamp at ±1000 mm·s prevents wind-up. PID final error in the logged run was -18 mm, compared to -104 mm for P and +21 mm for PD. So my conclusion is that PD already gave most of the performance, but PID was slightly better at removing the last small offset.
 
 <details>
 <summary>Arduino: full PID computation in handle_pid()</summary>
@@ -208,6 +242,8 @@ The TOF sensor delivers real data at 10 Hz, but the PID loop runs at 112 Hz. Wit
 <img src='/images/mae4190/lab5/extrapolation.png' width='700'>
 
 Every time a new TOF value arrives, the Artemis computes the slope in mm/ms and stores it. Between readings it projects forward using `tof_current = tof_last_val + tof_slope * dt_since`. The `extrap` flag in each logged sample marks whether the value is real or estimated so the plots can distinguish them. The PID loop speed-up is 112 / 10 = 11.2x, meaning the derivative term gets a meaningful signal on every iteration instead of being stale 90% of the time.
+
+Using the wheel diameter of 80 mm gives a circumference of `pi * 80 ≈ 251.3 mm`. In the fastest successful run, the car moved from 1905 mm to the 304 mm setpoint, so it covered about 1601 mm. The `pid_contorl_120pwm.mp4` video is 3.97 s long, so the average linear speed over that run was about `1601 / 3.97 ≈ 403.6 mm/s = 0.404 m/s = 1.32 ft/s`. That corresponds to about `403.6 / 251.3 ≈ 1.61` wheel revolutions per second, or about `96.4 rpm`. Assuming speed scales roughly with commanded cruise PWM in this operating region, the same estimate gives about `0.269 m/s` at 80 PWM and `0.135 m/s` at 40 PWM.
 
 <details>
 <summary>Arduino: TOF extrapolation in handle_pid()</summary>
