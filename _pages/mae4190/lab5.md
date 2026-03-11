@@ -162,7 +162,7 @@ At 120 PWM the robot now brakes smoothly and stops within 21 mm of the setpoint.
 
 ## PID Control
 
-I still implemented full PID because I am in the 5000-level track and wanted to test whether a small integrator would improve the final settle without ruining the transient. Adding `KI = 0.001` provides a gentle integrator that corrects the small residual steady-state error P and D can't fix on their own, while the clamp at ±1000 mm·s prevents wind-up. PID final error in the logged run was -18 mm, compared to -104 mm for P and +21 mm for PD. So my conclusion is that PD already gave most of the performance, but PID was slightly better at removing the last small offset.
+I implemented PID wanted to test whether a small integrator would improve the final settle without ruining the transient. Adding `KI = 0.001` provides a gentle integrator that corrects the small residual steady-state error P and D can't fix on their own, while the clamp at ±1000 mm·s prevents wind-up. PID final error in the logged run was -18 mm, compared to -104 mm for P and +21 mm for PD. So my conclusion is that PD already gave most of the performance, but PID was slightly better at removing the last small offset.
 
 <details>
 <summary>Arduino: full PID computation in handle_pid()</summary>
