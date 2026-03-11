@@ -67,13 +67,13 @@ At 40 PWM the robot moved slowly and coasted to the wall rather than using rever
 <img src='/images/mae4190/lab5/lab5_p_control.png' width='700'>
 
 <video width='700' controls>
-  <source src='/images/mae4190/lab5/p_control.mov' type='video/mp4'>
+  <source src='/images/mae4190/lab5/p_control.mp4' type='video/mp4'>
 </video>
 
 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;">
-  <video width='32%' controls><source src='/images/mae4190/lab5/p_control_40pwm.MOV' type='video/mp4'></video>
-  <video width='32%' controls><source src='/images/mae4190/lab5/p_control_80pwm.MOV' type='video/mp4'></video>
-  <video width='32%' controls><source src='/images/mae4190/lab5/p_control_120pwm.MOV' type='video/mp4'></video>
+  <video width='32%' controls><source src='/images/mae4190/lab5/p_control_40pwm.mp4' type='video/mp4'></video>
+  <video width='32%' controls><source src='/images/mae4190/lab5/p_control_80pwm.mp4' type='video/mp4'></video>
+  <video width='32%' controls><source src='/images/mae4190/lab5/p_control_120pwm.mp4' type='video/mp4'></video>
 </div>
 
 <img src='/images/mae4190/lab5/lab5_p_pwm_comparison.png' width='700'>
@@ -87,13 +87,13 @@ At 120 PWM the robot now brakes smoothly and stops within 21 mm of the setpoint.
 <img src='/images/mae4190/lab5/lab5_pd_control.png' width='700'>
 
 <video width='700' controls>
-  <source src='/images/mae4190/lab5/pd_control.MOV' type='video/mp4'>
+  <source src='/images/mae4190/lab5/pd_control.mp4' type='video/mp4'>
 </video>
 
 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;">
-  <video width='32%' controls><source src='/images/mae4190/lab5/pd_control_40pwm.MOV' type='video/mp4'></video>
-  <video width='32%' controls><source src='/images/mae4190/lab5/pd_control_80pwm.MOV' type='video/mp4'></video>
-  <video width='32%' controls><source src='/images/mae4190/lab5/pd_control_120pwm.MOV' type='video/mp4'></video>
+  <video width='32%' controls><source src='/images/mae4190/lab5/pd_control_40pwm.mp4' type='video/mp4'></video>
+  <video width='32%' controls><source src='/images/mae4190/lab5/pd_control_80pwm.mp4' type='video/mp4'></video>
+  <video width='32%' controls><source src='/images/mae4190/lab5/pd_control_120pwm.mp4' type='video/mp4'></video>
 </div>
 
 <img src='/images/mae4190/lab5/lab5_pd_pwm_comparison.png' width='700'>
@@ -141,17 +141,17 @@ For the robustness test I pushed the robot away from the wall mid-run. The PID c
 <img src='/images/mae4190/lab5/lab5_pid_control.png' width='700'>
 
 <video width='700' controls>
-  <source src='/images/mae4190/lab5/pid_contorl.MOV' type='video/mp4'>
+  <source src='/images/mae4190/lab5/pid_contorl.mp4' type='video/mp4'>
 </video>
 
 <video width='700' controls>
-  <source src='/images/mae4190/lab5/pid_robust_control.mov' type='video/mp4'>
+  <source src='/images/mae4190/lab5/pid_robust_control.mp4' type='video/mp4'>
 </video>
 
 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;">
-  <video width='32%' controls><source src='/images/mae4190/lab5/pid_contorl_40pwm.MOV' type='video/mp4'></video>
-  <video width='32%' controls><source src='/images/mae4190/lab5/pid_contorl_80pwm.MOV' type='video/mp4'></video>
-  <video width='32%' controls><source src='/images/mae4190/lab5/pid_contorl_120pwm.MOV' type='video/mp4'></video>
+  <video width='32%' controls><source src='/images/mae4190/lab5/pid_contorl_40pwm.mp4' type='video/mp4'></video>
+  <video width='32%' controls><source src='/images/mae4190/lab5/pid_contorl_80pwm.mp4' type='video/mp4'></video>
+  <video width='32%' controls><source src='/images/mae4190/lab5/pid_contorl_120pwm.mp4' type='video/mp4'></video>
 </div>
 
 <img src='/images/mae4190/lab5/lab5_pid_pwm_comparison.png' width='700'>
