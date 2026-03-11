@@ -92,6 +92,10 @@ def parse_pid_data(buf):
 
 I used the default TOF integration time, which gave real readings at roughly 10 Hz (100 ms per sample). The PID loop itself runs at ~112 Hz (8.9 ms per iteration) because it never blocks on sensor readiness. The extrapolation described below fills the gap between sensor readings. Lowering the integration time with `setProxIntegrationTime` would push the sensor rate higher at the cost of ranging accuracy, but 10 Hz was sufficient for 1905 mm approach distances.
 
+## Controller Choice
+
+I need to test full PID, but I expected PD to carry most of the performance. I don't want do PI simply because in my past experience the integral term is usually the trickiest part to tune because wind-up and slow bias accumulation can make the transient response worse before they help the final steady-state error. By contrast PD is often enough for wall approach, P drives the robot toward the target, while D damps the overshoot and makes braking earlier at high speed. So my plan was to tune P first, then add D to fix the overshoot, then add only a small I term at the end to see whether it could remove the last residual offset without hurting the response.
+
 ## P Control
 
 Starting point for KP: the firmware maps PID output to motor PWM as `PWM = 40 + (|output| / 200) * 160`. To cap the robot at 60 PWM during early tuning I needed a max PID output of 25, so `KP = 25 / 1700 ≈ 0.015` where 1700 mm is the typical starting error at 1905 mm start distance.
@@ -126,7 +130,7 @@ At 40 PWM the robot moved slowly and coasted to the wall rather than using rever
 
 ## PD Control
 
-For the final controller choice, I first decided against PI. In my past projects the integral term has usually been the trickiest branch to tune because wind-up and slow bias accumulation can easily make the transient response worse before they fix the steady-state error. PD is usually enough to get good wall-approach behavior because proportional handles distance error and derivative damps the overshoot. Adding derivative with `KD = 0.004` (ratio KD/KP ≈ 0.27) fixes the high-speed crash problem. The derivative term sees the large negative rate of change as the robot rushes toward the wall and applies braking force proportional to approach speed. A low-pass filter with α = 0.9 suppresses noise on the derivative: `pid_dF = 0.9 * pid_dF + 0.1 * d_raw`.
+Adding derivative with `KD = 0.004` (ratio KD/KP ≈ 0.27) fixes the high-speed crash problem. The derivative term sees the large negative rate of change as the robot rushes toward the wall and applies braking force proportional to approach speed. A low-pass filter with α = 0.9 suppresses noise on the derivative: `pid_dF = 0.9 * pid_dF + 0.1 * d_raw`.
 
 At 120 PWM the robot now brakes smoothly and stops within 21 mm of the setpoint. The motor output plot shows active reverse braking at high speed, which P-only couldn't do. PD performance at all three speed levels was already very close to PID, so the derivative term is doing most of the heavy lifting.
 
