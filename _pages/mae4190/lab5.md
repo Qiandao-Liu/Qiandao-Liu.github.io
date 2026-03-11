@@ -66,14 +66,26 @@ At 40 PWM the robot moved slowly and coasted to the wall rather than using rever
 
 <img src='/images/mae4190/lab5/lab5_p_control.png' width='700'>
 
-<video width='700' controls>
-  <source src='/images/mae4190/lab5/p_control.mp4' type='video/mp4'>
-</video>
+<div style="width:700px;">
+  <video width='700' controls>
+    <source src='/images/mae4190/lab5/p_control.mp4' type='video/mp4'>
+  </video>
+  <div style="text-align:center; font-size:0.95em;">P control run at the main tuned setting.</div>
+</div>
 
 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;">
-  <video width='32%' controls><source src='/images/mae4190/lab5/p_control_40pwm.mp4' type='video/mp4'></video>
-  <video width='32%' controls><source src='/images/mae4190/lab5/p_control_80pwm.mp4' type='video/mp4'></video>
-  <video width='32%' controls><source src='/images/mae4190/lab5/p_control_120pwm.mp4' type='video/mp4'></video>
+  <div style="width:32%; text-align:center;">
+    <video width='100%' controls><source src='/images/mae4190/lab5/p_control_40pwm.mp4' type='video/mp4'></video>
+    <div style="font-size:0.9em;">P control at 40 PWM.</div>
+  </div>
+  <div style="width:32%; text-align:center;">
+    <video width='100%' controls><source src='/images/mae4190/lab5/p_control_80pwm.mp4' type='video/mp4'></video>
+    <div style="font-size:0.9em;">P control at 80 PWM.</div>
+  </div>
+  <div style="width:32%; text-align:center;">
+    <video width='100%' controls><source src='/images/mae4190/lab5/p_control_120pwm.mp4' type='video/mp4'></video>
+    <div style="font-size:0.9em;">P control at 120 PWM.</div>
+  </div>
 </div>
 
 <img src='/images/mae4190/lab5/lab5_p_pwm_comparison.png' width='700'>
@@ -86,14 +98,26 @@ At 120 PWM the robot now brakes smoothly and stops within 21 mm of the setpoint.
 
 <img src='/images/mae4190/lab5/lab5_pd_control.png' width='700'>
 
-<video width='700' controls>
-  <source src='/images/mae4190/lab5/pd_control.mp4' type='video/mp4'>
-</video>
+<div style="width:700px;">
+  <video width='700' controls>
+    <source src='/images/mae4190/lab5/pd_control.mp4' type='video/mp4'>
+  </video>
+  <div style="text-align:center; font-size:0.95em;">PD control run at the main tuned setting.</div>
+</div>
 
 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;">
-  <video width='32%' controls><source src='/images/mae4190/lab5/pd_control_40pwm.mp4' type='video/mp4'></video>
-  <video width='32%' controls><source src='/images/mae4190/lab5/pd_control_80pwm.mp4' type='video/mp4'></video>
-  <video width='32%' controls><source src='/images/mae4190/lab5/pd_control_120pwm.mp4' type='video/mp4'></video>
+  <div style="width:32%; text-align:center;">
+    <video width='100%' controls><source src='/images/mae4190/lab5/pd_control_40pwm.mp4' type='video/mp4'></video>
+    <div style="font-size:0.9em;">PD control at 40 PWM.</div>
+  </div>
+  <div style="width:32%; text-align:center;">
+    <video width='100%' controls><source src='/images/mae4190/lab5/pd_control_80pwm.mp4' type='video/mp4'></video>
+    <div style="font-size:0.9em;">PD control at 80 PWM.</div>
+  </div>
+  <div style="width:32%; text-align:center;">
+    <video width='100%' controls><source src='/images/mae4190/lab5/pd_control_120pwm.mp4' type='video/mp4'></video>
+    <div style="font-size:0.9em;">PD control at 120 PWM.</div>
+  </div>
 </div>
 
 <img src='/images/mae4190/lab5/lab5_pd_pwm_comparison.png' width='700'>
@@ -140,18 +164,33 @@ For the robustness test I pushed the robot away from the wall mid-run. The PID c
 
 <img src='/images/mae4190/lab5/lab5_pid_control.png' width='700'>
 
-<video width='700' controls>
-  <source src='/images/mae4190/lab5/pid_contorl.mp4' type='video/mp4'>
-</video>
+<div style="width:700px;">
+  <video width='700' controls>
+    <source src='/images/mae4190/lab5/pid_contorl.mp4' type='video/mp4'>
+  </video>
+  <div style="text-align:center; font-size:0.95em;">PID control at the main tuned setting.</div>
+</div>
 
-<video width='700' controls>
-  <source src='/images/mae4190/lab5/pid_robust_control.mp4' type='video/mp4'>
-</video>
+<div style="width:700px;">
+  <video width='700' controls>
+    <source src='/images/mae4190/lab5/pid_robust_control.mp4' type='video/mp4'>
+  </video>
+  <div style="text-align:center; font-size:0.95em;">PID robustness test after pushing the robot away from the wall.</div>
+</div>
 
 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;">
-  <video width='32%' controls><source src='/images/mae4190/lab5/pid_contorl_40pwm.mp4' type='video/mp4'></video>
-  <video width='32%' controls><source src='/images/mae4190/lab5/pid_contorl_80pwm.mp4' type='video/mp4'></video>
-  <video width='32%' controls><source src='/images/mae4190/lab5/pid_contorl_120pwm.mp4' type='video/mp4'></video>
+  <div style="width:32%; text-align:center;">
+    <video width='100%' controls><source src='/images/mae4190/lab5/pid_contorl_40pwm.mp4' type='video/mp4'></video>
+    <div style="font-size:0.9em;">PID control at 40 PWM.</div>
+  </div>
+  <div style="width:32%; text-align:center;">
+    <video width='100%' controls><source src='/images/mae4190/lab5/pid_contorl_80pwm.mp4' type='video/mp4'></video>
+    <div style="font-size:0.9em;">PID control at 80 PWM.</div>
+  </div>
+  <div style="width:32%; text-align:center;">
+    <video width='100%' controls><source src='/images/mae4190/lab5/pid_contorl_120pwm.mp4' type='video/mp4'></video>
+    <div style="font-size:0.9em;">PID control at 120 PWM.</div>
+  </div>
 </div>
 
 <img src='/images/mae4190/lab5/lab5_pid_pwm_comparison.png' width='700'>
@@ -165,6 +204,8 @@ For the robustness test I pushed the robot away from the wall mid-run. The PID c
 ## Linear Extrapolation
 
 The TOF sensor delivers real data at 10 Hz, but the PID loop runs at 112 Hz. Without extrapolation, the derivative term sees a zero rate of change for roughly 90% of iterations because the error isn't updating. The fix is to estimate the current distance linearly from the last two real TOF readings.
+
+<img src='/images/mae4190/lab5/extrapolation.png' width='400'>
 
 Every time a new TOF value arrives, the Artemis computes the slope in mm/ms and stores it. Between readings it projects forward using `tof_current = tof_last_val + tof_slope * dt_since`. The `extrap` flag in each logged sample marks whether the value is real or estimated so the plots can distinguish them. The PID loop speed-up is 112 / 10 = 11.2x, meaning the derivative term gets a meaningful signal on every iteration instead of being stale 90% of the time.
 
