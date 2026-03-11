@@ -205,7 +205,7 @@ For the robustness test I pushed the robot away from the wall mid-run. The PID c
 
 The TOF sensor delivers real data at 10 Hz, but the PID loop runs at 112 Hz. Without extrapolation, the derivative term sees a zero rate of change for roughly 90% of iterations because the error isn't updating. The fix is to estimate the current distance linearly from the last two real TOF readings.
 
-<img src='/images/mae4190/lab5/extrapolation.png' width='400'>
+<img src='/images/mae4190/lab5/extrapolation.png' width='700'>
 
 Every time a new TOF value arrives, the Artemis computes the slope in mm/ms and stores it. Between readings it projects forward using `tof_current = tof_last_val + tof_slope * dt_since`. The `extrap` flag in each logged sample marks whether the value is real or estimated so the plots can distinguish them. The PID loop speed-up is 112 / 10 = 11.2x, meaning the derivative term gets a meaningful signal on every iteration instead of being stale 90% of the time.
 
