@@ -241,6 +241,8 @@ The three-way comparison plot shows that P and PD settle similarly fast, but PID
 | PD  | 2.5 | 0    | 0.05 | +0.6° | 4.4 ms |
 | PID | 2.5 | 0.05 | 0.05 | -1.0° | 4.7 ms |
 
+That's a shame, seems like that P-control is way enough for orientation and turning, even perform better than PD and PID. I think that's because on ideal flat ground, plain turnning is much easiler than driving forward and stop ahead wall, and KI and KD introduce more calculation and shift to the system, I agree in a harder senario (like unflat ground for 5000-level task) PID definatly helps.
+
 ## Setpoint Change Mid-Run
 
 To verify real-time setpoint updates, I started at 90°, let the robot converge, then sent `SET_ORIENT_TARGET -90` over BLE at t = 4 s while the PID loop was still running. The robot reached 89.9° at the end of the first phase, then immediately started turning toward -90° after the command was received.
@@ -278,12 +280,6 @@ case SET_ORIENT_TARGET:
 </details>
 
 The setpoint variable is a global the PID loop reads on every iteration, so writing it from a BLE command handler takes effect immediately on the next loop cycle. No synchronization primitives are needed because the Artemis is single-threaded and BLE events are only processed when `BLE.poll()` is called explicitly between data transmissions.
-
-## Wind-up Protection
-
-The integrator is clamped to ±`ORIENT_IMAX` to prevent runaway accumulation. On a slippery floor the robot may spin past the setpoint without the integrator contributing much, but on a high-friction surface the integrator winds up quickly. Without the clamp, switching to a new setpoint on a rough surface produced about 15° of transient overshoot because the accumulated integral from the previous hold was still pushing in the old direction. With the clamp at ±50, overshoot on surface change dropped to under 5°.
-
-<img src='/images/mae4190/lab6/lab6_pid_uneven.png' width='700'>
 
 Meet with my cat Mulberry! 🐱
 
