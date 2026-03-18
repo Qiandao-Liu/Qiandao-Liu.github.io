@@ -7,20 +7,20 @@ author_profile: true
 
 {% include base_path %}
 
-Goal: control the yaw angle of the robot in place using gyroscope feedback and a PID controller. I tested P, PD, and PID configurations, addressed derivative kick with a low-pass filter, and demonstrated real-time setpoint changes over BLE.
+Goal: control robot yaw in place using gyroscope feedback and PID. I tested P, PD, and PID, handled derivative kick with a low-pass filter, and changed the setpoint live over BLE.
 
 ## Prelab
 
-The BLE flow for orientation mirrors the structure from Lab 5. Python sends `ORIENT_START` to reset the IMU yaw and begin the PID loop on Artemis, which auto-stops after a timeout. During the run the Artemis buffers every PID sample into fixed arrays. After Python sends `ORIENT_STOP` and then `GET_ORIENT_DATA`, the Artemis streams back tagged strings. Gains and the setpoint can be updated at any time mid-run without reflashing, using `SET_ORIENT_GAINS` and `SET_ORIENT_TARGET`.
+The BLE flow mirrors Lab 5. Python sends `ORIENT_START` to reset yaw and start the PID loop, which stops on timeout. Artemis buffers each PID sample into arrays. After `ORIENT_STOP` and `GET_ORIENT_DATA`, it streams tagged strings. Gains and setpoint can be updated mid-run with `SET_ORIENT_GAINS` and `SET_ORIENT_TARGET`, so no reflashing is needed.
 
-The data format from Artemis is:
+Data format:
 
 ```
 OPID|{yaw_tenths}|{error_tenths}|{motor_pwm}|{time_ms}
 OPID_END|{count}
 ```
 
-Yaw and error are transmitted as integers in tenths of a degree so that 905 represents 90.5°. Motor PWM is signed: positive means right-turn drive, negative means left-turn drive.
+Yaw and error are sent in tenths of a degree, so 905 means 90.5°. Signed motor PWM gives right turn for positive and left turn for negative.
 
 <details>
 <summary>Arduino: GET_ORIENT_DATA packet format</summary>
@@ -89,21 +89,21 @@ def parse_orient_data(buf):
 </div>
 </details>
 
-The `run_orient_experiment()` helper calls `ORIENT_START`, optionally fires `SET_ORIENT_TARGET` mid-run to test setpoint changes, then calls `ORIENT_STOP` and `GET_ORIENT_DATA` and blocks until `OPID_END` arrives. This keeps BLE responsive the whole time since the Artemis is only logging and the gains or setpoint can be changed by any Python call while the loop is running.
+`run_orient_experiment()` sends `ORIENT_START`, can send `SET_ORIENT_TARGET` mid-run, then calls `ORIENT_STOP`, `GET_ORIENT_DATA`, and waits for `OPID_END`. BLE stays responsive because Artemis only logs during the run.
 
 ## Gyro Integration and Sensor Considerations
 
-I use the onboard DMP to get yaw directly, which avoids the accumulating drift that raw gyro integration causes. Without the DMP, integrating the raw gyro introduces bias error that grows without bound. The ICM-20948 gyroscope has a default full-scale range of ±250 °/s, which is sufficient for in-place turns at the speeds I drive. The DMP outputs a quaternion that I convert to a single yaw angle referenced to the initial heading at startup.
+I used the onboard DMP to get yaw directly, which avoids drift from raw gyro integration. The ICM-20948 default gyro range is ±250 °/s, which is enough for my turns. The DMP quaternion is converted to startup-relative yaw.
 
-The PID loop ran at an average of 4.5 ms per iteration, roughly 220 Hz. That is well above the DMP output rate of about 100 Hz, so the loop has fresh yaw data on nearly every other iteration.
+The PID loop averaged 4.5 ms, or about 220 Hz. That is above the DMP output rate of about 100 Hz, so fresh yaw arrives nearly every other loop.
 
-The error is clamped to [-180°, 180°] before entering the PID so the robot always takes the shortest path. Without this clamp, a 181° error and a -179° error would produce opposite motor commands even though the robot is almost at the same position.
+I clamp error to [-180°, 180°] so the robot always takes the shortest turn. Otherwise, 181° and -179° would command opposite directions for nearly the same orientation.
 
 ## P Control
 
-Starting KP: at 180° error I want close to maximum turn speed. The motor PWM is mapped from PID output into [110, 166] after a deadband, so the effective output range is [-166, 166]. KP = 166 / 180 ≈ 0.92 gives full turn speed at maximum error. I started at KP = 2.5, tuned empirically since the deadband mapping made the effective gain lower than the raw number.
+At 180° error I wanted near maximum turn speed. Motor PWM is mapped into [110, 166] after the deadband, so `KP = 166 / 180 ≈ 0.92` was the rough starting point. I tuned empirically and settled on `KP = 2.5`.
 
-With KP = 2.5 and target = 90°, the robot reached 90° within about 1.0 s and the final error settled to +0.1°. There was overshoot to about 93.7° before settling. The PID loop interval averaged 4.3 ms (234 Hz) for 966 samples over a 4.1 s run.
+With `KP = 2.5` and a 90° target, the robot reached 90° in about 1.0 s and settled to +0.1° error after overshooting to about 93.7°. The run logged 966 samples over 4.1 s, so the average loop interval was 4.3 ms, or 234 Hz.
 
 <img src='/images/mae4190/lab6/lab6_p_control.png' width='700'>
 
@@ -111,45 +111,43 @@ With KP = 2.5 and target = 90°, the robot reached 90° within about 1.0 s and t
   <video width='700' controls>
     <source src='/images/mae4190/lab6/p_right_turn_90.mp4' type='video/mp4'>
   </video>
-  <div style="text-align:center; font-size:0.95em;">P control turning to 90°. Overshoot visible before settling.</div>
+  <div style="text-align:center; font-size:0.95em;">P control to 90°.</div>
 </div>
 
 ## PD Control
 
-The derivative term damps the motor output when the yaw is changing quickly, reducing overshoot. The derivative is computed on the yaw error directly. Since yaw is already an integral of angular velocity, the derivative of yaw error is angular velocity with sign. This is a meaningful signal because it tells the controller how fast the robot is rotating, so it can apply a counteracting torque before it overshoots.
+The derivative term damps fast rotation and reduces overshoot. Since yaw is the integral of angular velocity, the derivative of yaw error is signed angular velocity.
 
-I set KD = 0.05. The first attempt used KD = 0.4, but at 300 °/s the D term alone contributed 120 PWM, overpowering the P term at errors below 48°. That produced oscillation instead of damping. Dropping to 0.05 gave clean settling.
+I set `KD = 0.05`. My first try used `KD = 0.4`, but at 300 °/s the D term alone added 120 PWM, overpowered P below 48° error, and caused oscillation. Dropping to 0.05 gave clean settling.
 
-I tested at target = -180° to verify wrap-around logic. The robot correctly chose the left-turn direction, rotated through -180°/+180° cleanly, and stopped at 179.9° with a final error of +0.1°. The 982-sample run averaged 4.8 ms per loop (208 Hz).
+I tested `target = -180°` to check wrap-around. The robot chose the left turn, crossed -180° and +180° cleanly, and stopped at 179.9° with +0.1° final error. The 982-sample run averaged 4.8 ms, or 208 Hz.
 
 <img src='/images/mae4190/lab6/lab6_pd_control.png' width='700'>
 
 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;">
   <div style="width:49%; text-align:center;">
     <video width='100%' controls><source src='/images/mae4190/lab6/pd_right_turn_90.mp4' type='video/mp4'></video>
-    <div style="font-size:0.9em;">PD control at 90°.</div>
+    <div style="font-size:0.9em;">PD at 90°.</div>
   </div>
   <div style="width:49%; text-align:center;">
     <video width='100%' controls><source src='/images/mae4190/lab6/pd_turn_180.mp4' type='video/mp4'></video>
-    <div style="font-size:0.9em;">PD control turning to -180°, testing wrap-around.</div>
+    <div style="font-size:0.9em;">PD at -180°.</div>
   </div>
 </div>
-
-The comparison below shows P vs PD at the same 90° target. PD reaches the setpoint faster and the motor output drops smoothly as the robot approaches rather than cutting sharply.
 
 <img src='/images/mae4190/lab6/lab6_p_vs_pd.png' width='700'>
 
 ## Derivative Kick and Lowpass Filter
 
-Derivative kick happens when the setpoint changes instantaneously mid-run. The error jumps by a large amount in one PID iteration, so the derivative term sees a spike and drives the motor to maximum speed for one step. The fix is a first-order lowpass filter on the derivative term:
+Derivative kick appears when the setpoint changes instantly mid-run. The error jumps in one PID step, so the derivative spikes and can drive the motor to maximum for one sample. I fixed this with a low-pass filter:
 
 ```cpp
 orient_dF = alpha * d_raw + (1.0f - alpha) * orient_dF;
 ```
 
-With alpha = 1.0 there is no filtering and the spike passes through. With alpha = 0.002 the filter is aggressive and the derivative can only move by 0.2% of the raw value per step, blocking the kick entirely.
+With `alpha = 1.0`, the spike passes through. With `alpha = 0.002`, the derivative moves by only 0.2% of the raw value per step, so the kick is almost gone.
 
-I ran two tests with the same gain and setpoint change sequence: hold at 90° for 3 s, then switch target to -90°. Without the filter the motor PWM spiked to ±200 at the moment of the setpoint switch. With alpha = 0.002 the motor output was smooth through the transition.
+I ran the same sequence twice: hold 90° for 3 s, then switch to -90°. Without the filter, motor PWM spiked to ±200 at the switch. With `alpha = 0.002`, the transition stayed smooth.
 
 <img src='/images/mae4190/lab6/lab6_derivative_kick.png' width='700'>
 
@@ -157,7 +155,7 @@ I ran two tests with the same gain and setpoint change sequence: hold at 90° fo
   <video width='700' controls>
     <source src='/images/mae4190/lab6/derivative_kick.mp4' type='video/mp4'>
   </video>
-  <div style="text-align:center; font-size:0.95em;">Derivative kick demo: without LPF the motor spikes at the setpoint change; with LPF α=0.002 the transition is smooth.</div>
+  <div style="text-align:center; font-size:0.95em;">Derivative kick demo.</div>
 </div>
 
 <details>
@@ -179,9 +177,9 @@ float output = orient_kp * orient_error
 
 ## PID Control
 
-Adding the integral term removes steady-state error that friction causes. When the robot sits slightly off the setpoint and P+D are too small to move it, the integrator winds up over time until the combined output overcomes the deadband and the motors fire. I used KI = 0.05.
+The integral term removes steady state error from friction. If the robot stops slightly off target and P plus D are too small to move it, I builds command until it clears the deadband. I used `KI = 0.05`.
 
-The PID run at 90° showed a final error of -1.0° compared to +0.1° for P-only. The integrator slightly overshot the target by 1°, meaning accumulation was still ongoing when the robot stopped. A tighter wind-up clamp would fix this. The loop averaged 4.7 ms (213 Hz) over 1015 samples.
+The 90° PID run ended at -1.0° error, compared with +0.1° for P only. The extra 1° overshoot means the integrator was still accumulating when the robot stopped, so a tighter wind-up clamp would help. The run averaged 4.7 ms, or 213 Hz, over 1015 samples.
 
 <img src='/images/mae4190/lab6/lab6_pid_control.png' width='700'>
 
@@ -231,7 +229,7 @@ if (fabsf(output) > 2.0f) {
 </div>
 </details>
 
-The three-way comparison plot shows that P and PD settle similarly fast, but PID removes the small residual offset caused by surface friction.
+The three-way comparison shows P and PD settle similarly fast, while PID removes the residual offset from surface friction.
 
 <img src='/images/mae4190/lab6/lab6_pid_comparison.png' width='700'>
 
@@ -241,11 +239,11 @@ The three-way comparison plot shows that P and PD settle similarly fast, but PID
 | PD  | 2.5 | 0    | 0.05 | +0.6° | 4.4 ms |
 | PID | 2.5 | 0.05 | 0.05 | -1.0° | 4.7 ms |
 
-That's a shame, seems like that P-control is way enough for orientation and turning, even perform better than PD and PID. I think that's because on ideal flat ground, plain turnning is much easiler than driving forward and stop ahead wall, and KI and KD introduce more calculation and shift to the system, I agree in a harder senario (like unflat ground for 5000-level task) PID definatly helps.
+P control was already enough for this task and even beat PD and PID in final error. I think that happened because turning in place on flat ground is simpler than high speed wall approach, so extra I and D added little here. On rough ground or in faster motion, PID would matter more.
 
 ## Setpoint Change Mid-Run
 
-To verify real-time setpoint updates, I started at 90°, let the robot converge, then sent `SET_ORIENT_TARGET -90` over BLE at t = 4 s while the PID loop was still running. The robot reached 89.9° at the end of the first phase, then immediately started turning toward -90° after the command was received.
+To verify live setpoint updates, I started at 90°, let the robot settle, then sent `SET_ORIENT_TARGET -90` over BLE at `t = 4 s` while the PID loop was still running. The robot reached 89.9° first, then turned toward -90°.
 
 <img src='/images/mae4190/lab6/lab6_pid_control_with_setpoint_change.png' width='700'>
 
@@ -253,7 +251,7 @@ To verify real-time setpoint updates, I started at 90°, let the robot converge,
   <video width='700' controls>
     <source src='/images/mae4190/lab6/pid_setpoint_change.mp4' type='video/mp4'>
   </video>
-  <div style="text-align:center; font-size:0.95em;">PID control with setpoint change from 90° to -90° at t=4 s via BLE.</div>
+  <div style="text-align:center; font-size:0.95em;">PID with setpoint change.</div>
 </div>
 
 <details>
@@ -279,7 +277,7 @@ case SET_ORIENT_TARGET:
 </div>
 </details>
 
-The setpoint variable is a global the PID loop reads on every iteration, so writing it from a BLE command handler takes effect immediately on the next loop cycle. No synchronization primitives are needed because the Artemis is single-threaded and BLE events are only processed when `BLE.poll()` is called explicitly between data transmissions.
+The setpoint is global, so a BLE write takes effect on the next cycle. No synchronization is needed because Artemis is single-threaded.
 
 Meet with my cat Mulberry! 🐱
 

@@ -7,15 +7,13 @@ author_profile: true
 
 {% include base_path %}
 
-Goal: drive the robot as fast as possible toward a wall and stop exactly 1 ft (304 mm) away using TOF sensor feedback. I tested P, PD, and PID controllers at three speed levels each and added linear extrapolation to decouple the PID loop rate from the sensor rate.
+Goal: drive the robot toward a wall as fast as possible and stop 304 mm away using TOF feedback. I tested P, PD, and PID at three speed levels and added linear extrapolation so the PID loop could run faster than the sensor.
 
-Setup: the robot starts 75 inches (1905 mm) from the wall every run. I placed a yoga mat against the wall as a crash buffer during high-speed tuning. For each control (P, PD, PID), I tested 3 different PWM (40, 80 ,120), and each one with 3 trials for robustness. 
+Setup: each run starts 1905 mm from the wall. I put a yoga mat on the wall during high speed tuning. For P, PD, and PID, I tested PWM 40, 80, and 120 with three trials each.
 
 ## Prelab
 
-The BLE debugging flow has three stages. Python sends `PID_START` to reset the controller state and begin a fixed 10 s run on the Artemis. During the run, the Artemis logs every TOF sample and every PID iteration into fixed arrays and still hard-stops on timeout even if BLE drops. After Python sends `GET_PID_DATA`, the Artemis streams the buffered records back as tagged strings: `TOF|dist_mm|extrap_flag|time_ms`, `PID|error_mm|motor_pwm|time_ms`, and a final `PID_END|tof_count|pid_count` marker. Python subscribes to `RX_STRING`, appends each notification line to a list, then splits the lines into TOF and PID tables after `PID_END` arrives.
-
-Gains are tunable over BLE with `SET_PID_GAINS kp|ki|kd|setpoint` so I never had to reflash between tuning runs.
+Python sends `PID_START` to reset the controller and start a fixed 10 s run. Artemis logs every TOF sample and PID step into arrays, then `GET_PID_DATA` streams `TOF|dist_mm|extrap_flag|time_ms`, `PID|error_mm|motor_pwm|time_ms`, and `PID_END|tof_count|pid_count`. Python stores each line and parses the TOF and PID tables after `PID_END`. I tuned gains over BLE with `SET_PID_GAINS`, so no reflashing was needed.
 
 <details>
 <summary>Arduino: GET_PID_DATA packet format</summary>
@@ -90,17 +88,17 @@ def parse_pid_data(buf):
 
 ## TOF Sensor Configuration
 
-I used the default TOF integration time, which gave real readings at roughly 10 Hz (100 ms per sample). The PID loop itself runs at ~112 Hz (8.9 ms per iteration) because it never blocks on sensor readiness. The extrapolation described below fills the gap between sensor readings. Lowering the integration time with `setProxIntegrationTime` would push the sensor rate higher at the cost of ranging accuracy, but 10 Hz was sufficient for 1905 mm approach distances.
+I kept the default TOF integration time. Real readings arrived at about 10 Hz. The PID loop ran at about 112 Hz because it never blocked on sensor readiness, so extrapolation filled the gaps. `setProxIntegrationTime` could raise the sensor rate, but 10 Hz was enough for a 1905 mm approach.
 
 ## Controller Choice
 
-I need to test full PID, but I expected PD to carry most of the performance. I don't want do PI simply because in my past experience the integral term is usually the trickiest part to tune because wind-up and slow bias accumulation can make the transient response worse before they help the final steady-state error. By contrast PD is often enough for wall approach, P drives the robot toward the target, while D damps the overshoot and makes braking earlier at high speed. So my plan was to tune P first, then add D to fix the overshoot, then add only a small I term at the end to see whether it could remove the last residual offset without hurting the response.
+I expected PD to do most of the work. P drives the robot toward the wall, and D should brake earlier at high speed and reduce overshoot. I left I for last because it is the easiest term to over-tune with wind-up. So I tuned P first, added D to stop the crashes, then added a small I term to remove the last bias.
 
 ## P Control
 
-Starting point for KP: the firmware maps PID output to motor PWM as `PWM = 40 + (|output| / 200) * 160`. To cap the robot at 60 PWM during early tuning I needed a max PID output of 25, so `KP = 25 / 1700 ≈ 0.015` where 1700 mm is the typical starting error at 1905 mm start distance.
+The firmware maps PID output to PWM with `PWM = 40 + (|output| / 200) * 160`. To cap early tuning near 60 PWM, I wanted a max output near 25, so `KP = 25 / 1700 ≈ 0.015` using a typical starting error of 1700 mm.
 
-At 40 PWM the robot moved slowly and coasted to the wall rather than using reverse to brake. It often stopped 50-100 mm past the setpoint. At 80 PWM it needed to reverse and could stop cleanly in most runs. At 120 PWM the proportional term alone couldn't brake fast enough and the robot hit the wall every time. P-only final error in the logged run was -104 mm.
+At 40 PWM the robot coasted and usually stopped 50 to 100 mm past the target. At 80 PWM it needed reverse braking and usually stopped cleanly. At 120 PWM, P alone could not brake fast enough and hit the wall every run. The logged P run ended at -104 mm error.
 
 <img src='/images/mae4190/lab5/lab5_p_control.png' width='700'>
 
@@ -108,7 +106,7 @@ At 40 PWM the robot moved slowly and coasted to the wall rather than using rever
   <video width='700' controls>
     <source src='/images/mae4190/lab5/p_control.mp4' type='video/mp4'>
   </video>
-  <div style="text-align:center; font-size:0.95em;">P control run at the main tuned setting.</div>
+  <div style="text-align:center; font-size:0.95em;">P control.</div>
 </div>
 
 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;">
@@ -130,9 +128,9 @@ At 40 PWM the robot moved slowly and coasted to the wall rather than using rever
 
 ## PD Control
 
-Adding derivative with `KD = 0.004` (ratio KD/KP ≈ 0.27) fixes the high-speed crash problem. The derivative term sees the large negative rate of change as the robot rushes toward the wall and applies braking force proportional to approach speed. A low-pass filter with α = 0.9 suppresses noise on the derivative: `pid_dF = 0.9 * pid_dF + 0.1 * d_raw`.
+Adding `KD = 0.004` fixed the high speed crashes. The derivative term sees the fast negative distance change and commands braking proportional to approach speed. I filtered it with `pid_dF = 0.9 * pid_dF + 0.1 * d_raw` to suppress noise.
 
-At 120 PWM the robot now brakes smoothly and stops within 21 mm of the setpoint. The motor output plot shows active reverse braking at high speed, which P-only couldn't do. PD performance at all three speed levels was already very close to PID, so the derivative term is doing most of the heavy lifting.
+At 120 PWM, PD braked smoothly and stopped within 21 mm of the setpoint. The motor plot shows active reverse braking that P could not produce. PD was already close to PID at all three speeds, so D did most of the useful extra work.
 
 <img src='/images/mae4190/lab5/lab5_pd_control.png' width='700'>
 
@@ -140,7 +138,7 @@ At 120 PWM the robot now brakes smoothly and stops within 21 mm of the setpoint.
   <video width='700' controls>
     <source src='/images/mae4190/lab5/pd_control.mp4' type='video/mp4'>
   </video>
-  <div style="text-align:center; font-size:0.95em;">PD control run at the main tuned setting.</div>
+  <div style="text-align:center; font-size:0.95em;">PD control.</div>
 </div>
 
 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;">
@@ -162,7 +160,7 @@ At 120 PWM the robot now brakes smoothly and stops within 21 mm of the setpoint.
 
 ## PID Control
 
-I implemented PID wanted to test whether a small integrator would improve the final settle without ruining the transient. Adding `KI = 0.001` provides a gentle integrator that corrects the small residual steady-state error P and D can't fix on their own, while the clamp at ±1000 mm·s prevents wind-up. PID final error in the logged run was -18 mm, compared to -104 mm for P and +21 mm for PD. So my conclusion is that PD already gave most of the performance, but PID was slightly better at removing the last small offset.
+I added PID to test whether a small integrator could remove the last steady state error without hurting the transient. `KI = 0.001` was enough, and the clamp at ±1000 mm·s prevented wind-up. The logged PID run ended at -18 mm, compared with -104 mm for P and +21 mm for PD. PD gave most of the improvement, while PID only cleaned up the last small offset.
 
 <details>
 <summary>Arduino: full PID computation in handle_pid()</summary>
@@ -198,7 +196,7 @@ if (fabsf(output) > 2.0f) {
 </div>
 </details>
 
-For the robustness test I pushed the robot away from the wall mid-run. The PID controller corrected and returned to 304 mm.
+For robustness, I pushed the robot away from the wall mid-run. PID corrected and returned to 304 mm.
 
 <img src='/images/mae4190/lab5/lab5_pid_control.png' width='700'>
 
@@ -206,14 +204,14 @@ For the robustness test I pushed the robot away from the wall mid-run. The PID c
   <video width='700' controls>
     <source src='/images/mae4190/lab5/pid_contorl.mp4' type='video/mp4'>
   </video>
-  <div style="text-align:center; font-size:0.95em;">PID control at the main tuned setting.</div>
+  <div style="text-align:center; font-size:0.95em;">PID control.</div>
 </div>
 
 <div style="width:700px;">
   <video width='700' controls>
     <source src='/images/mae4190/lab5/pid_robust_control.mp4' type='video/mp4'>
   </video>
-  <div style="text-align:center; font-size:0.95em;">PID robustness test after pushing the robot away from the wall.</div>
+  <div style="text-align:center; font-size:0.95em;">PID robustness test.</div>
 </div>
 
 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;">
@@ -241,13 +239,13 @@ For the robustness test I pushed the robot away from the wall mid-run. The PID c
 
 ## Linear Extrapolation
 
-The TOF sensor delivers real data at 10 Hz, but the PID loop runs at 112 Hz. Without extrapolation, the derivative term sees a zero rate of change for roughly 90% of iterations because the error isn't updating. The fix is to estimate the current distance linearly from the last two real TOF readings.
+The TOF sensor gives real data at 10 Hz, but the PID loop runs at 112 Hz. Without extrapolation, the derivative sees stale error for about 90% of the loop. I fixed that by estimating the current distance from the last two real TOF readings.
 
 <img src='/images/mae4190/lab5/extrapolation.png' width='700'>
 
-Every time a new TOF value arrives, the Artemis computes the slope in mm/ms and stores it. Between readings it projects forward using `tof_current = tof_last_val + tof_slope * dt_since`. The `extrap` flag in each logged sample marks whether the value is real or estimated so the plots can distinguish them. The PID loop speed-up is 112 / 10 = 11.2x, meaning the derivative term gets a meaningful signal on every iteration instead of being stale 90% of the time.
+Each new TOF sample updates the slope in mm/ms. Between samples, Artemis projects forward with `tof_current = tof_last_val + tof_slope * dt_since`. I also logged an `extrap` flag so the plots can separate real and estimated points. This gives an effective 11.2x loop speed-up, so the derivative gets a fresh estimate every iteration instead of waiting for the next sensor sample.
 
-Using the wheel diameter of 80 mm gives a circumference of `pi * 80 ≈ 251.3 mm`. In the fastest successful run, the car moved from 1905 mm to the 304 mm setpoint, so it covered about 1601 mm. The `pid_contorl_120pwm.mp4` video is 3.97 s long, so the average linear speed over that run was about `1601 / 3.97 ≈ 403.6 mm/s = 0.404 m/s = 1.32 ft/s`. That corresponds to about `403.6 / 251.3 ≈ 1.61` wheel revolutions per second, or about `96.4 rpm`. Assuming speed scales roughly with commanded cruise PWM in this operating region, the same estimate gives about `0.269 m/s` at 80 PWM and `0.135 m/s` at 40 PWM.
+With an 80 mm wheel diameter, the circumference is about 251.3 mm. In the fastest successful run, the robot traveled about 1601 mm from 1905 mm to 304 mm in 3.97 s, so the average speed was about 403.6 mm/s, or 0.404 m/s and 1.32 ft/s. That is about 1.61 wheel rev/s, or 96.4 rpm. If speed scales roughly with cruise PWM in this region, the same estimate gives about 0.269 m/s at 80 PWM and 0.135 m/s at 40 PWM.
 
 <details>
 <summary>Arduino: TOF extrapolation in handle_pid()</summary>
