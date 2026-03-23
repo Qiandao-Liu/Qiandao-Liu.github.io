@@ -95,9 +95,11 @@ def parse_orient_data(buf):
 
 I used the onboard DMP to get yaw directly, which avoids drift from raw gyro integration. The ICM-20948 default gyro range is ±250 °/s, which is enough for my turns. The DMP quaternion is converted to startup-relative yaw.
 
-The PID loop averaged 4.5 ms, or about 220 Hz. That is above the DMP output rate of about 100 Hz, so fresh yaw arrives nearly every other loop.
+If yaw is computed by integrating raw gyro rate, even a small constant bias produces an angle error that grows roughly linearly with time, so long runs drift noticeably. The ICM-20948 gyro range is configurable up to ±2000 °/s in software, and that maximum is still far above the turn rate of this robot.
 
-I clamp error to [-180°, 180°] so the robot always takes the shortest turn. Otherwise, 181° and -179° would command opposite directions for nearly the same orientation.
+The PID loop averaged 4.5 ms, or about 220 Hz, above the DMP output rate of about 100 Hz.
+
+I clamp error to [-180°, 180°] so the robot always takes the shortest turn. Otherwise, 181° and -179° would command opposite directions for nearly the same orientation. The DMP also reduces tilt sensitivity and repeated-run yaw drift.
 
 ## P Control
 
@@ -244,6 +246,8 @@ P control was already enough for this task and even beat PD and PID in final err
 ## Setpoint Change Mid-Run
 
 To verify live setpoint updates, I started at 90°, let the robot settle, then sent `SET_ORIENT_TARGET -90` over BLE at `t = 4 s` while the PID loop was still running. The robot reached 89.9° first, then turned toward -90°.
+
+The same structure extends to driving by adding the orientation PID output as a signed steering correction on top of a forward or backward base motor command.
 
 <img src='/images/mae4190/lab6/lab6_pid_control_with_setpoint_change.png' width='700'>
 
