@@ -9,6 +9,25 @@ author_profile: true
 
 Goal: build a Kalman Filter that replaces linear extrapolation for the wall-approach PID controller. The filter runs on the Artemis and fills in distance estimates between slow ToF readings so the robot can move faster and more reliably.
 
+## KF Equations
+
+I used the standard linear KF equations in both Python and on the Artemis:
+
+```text
+x_dot = A_c x + B_c u
+y = C x
+
+A_d = I + dt A_c
+B_d = dt B_c
+
+mu_p = A_d mu + B_d u
+Sigma_p = A_d Sigma A_d^T + Sigma_u
+
+K = Sigma_p C^T (C Sigma_p C^T + Sigma_z)^(-1)
+mu = mu_p + K (y - C mu_p)
+Sigma = (I - K C) Sigma_p
+```
+
 ## Step Response and System Identification
 
 I drove the robot at a constant PWM of 80 toward the wall and logged ToF distance at every sensor sample. The firmware stops automatically when distance drops below 500 mm and streams the data back over BLE. I got 18 readings over about 1.5 seconds.
