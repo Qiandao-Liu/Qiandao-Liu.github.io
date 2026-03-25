@@ -165,7 +165,7 @@ Out of 84 logged KF debug frames, 19 used a real ToF measurement and 65 ran pred
   <video width='700' controls>
     <source src='/images/mae4190/lab7/car_stop_by_wall.mp4' type='video/mp4'>
   </video>
-  <div style="text-align:center; font-size:0.95em;">KF-PID wall approach, stopping at 356 mm.</div>
+  <div style="text-align:center; font-size:0.95em;">KF-PID wall approach, stopping at 356 mm, and finally locate at 203 mm.</div>
 </div>
 
 The firmware also includes a 3-sigma innovation gate: if a ToF reading is more than 3 standard deviations away from the prediction, it gets rejected as an outlier. This prevents a single bad reading from yanking the estimate off course at high speed.
