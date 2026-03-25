@@ -11,11 +11,11 @@ Goal: build a Kalman Filter that replaces linear extrapolation for the wall-appr
 
 ## Step Response and System Identification
 
-I drove the robot at a constant PWM of 80 toward the wall and logged ToF distance at every sensor sample. The firmware stops automatically when distance drops below 500 mm and streams the data back over BLE. I got 18 readings over about 1.5 seconds.
+I drove the robot at a constant PWM of 80 toward the wall and logged ToF distance at every sensor sample. The motor input for this experiment is a step function, so it stays flat at 80 the entire time and is not interesting to plot separately. The firmware stops automatically when distance drops below 500 mm and streams the data back over BLE. I got 18 readings over about 1.5 seconds.
 
-<img src='/images/mae4190/lab7/lab7_step_response_1.png' width='700'>
+<img src='/images/mae4190/lab7/lab7_step_response.png' width='700'>
 
-From the velocity curve I extracted two estimates of steady-state speed. The finite-difference method gave 1235 mm/s, and piecewise linear fitting across overlapping 50%-overlap segments gave 1225 mm/s. They agree to within 1%, so I used the piecewise-linear result as the primary estimate since it is less sensitive to noise spikes at individual ToF samples.
+The top panel overlays the piecewise linear fits on the raw distance data to show where the slope was measured. From the velocity curve I extracted two estimates of steady-state speed. The finite-difference method gave 1235 mm/s, and piecewise linear fitting across overlapping 50%-overlap segments gave 1225 mm/s. They agree to within 1%, so I used the piecewise-linear result as the primary estimate since it is less sensitive to noise spikes at individual ToF samples.
 
 The 90% rise time was 997 ms. From those two numbers:
 
