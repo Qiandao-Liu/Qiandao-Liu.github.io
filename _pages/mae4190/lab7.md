@@ -54,7 +54,7 @@ A_c = [[0,    -1  ],      B_c = [[0       ],      C = [[1, 0]]
 
 State is `[distance, velocity]`. C measures distance directly with a positive sign because the ToF reads positive values as the robot approaches.
 
-I computed the actual PID loop period from real timestamps instead of guessing: `dt = (t_max - t_min) / (N-1)`, which gave 7.60 ms. Hardcoding 20 ms would have degraded the Ad and Bd accuracy by 2.6x.
+I computed the actual PID loop period from real timestamps instead of guess: `dt = (t_max - t_min) / (N-1)`, which gave 7.60 ms. Hardcoding 20 ms would have degraded the Ad and Bd accuracy by 2.6x.
 
 Euler discretization:
 
@@ -118,7 +118,7 @@ I also compared three sigma configurations to understand the trade-off:
 
 <img src='/images/mae4190/lab7/kf_sigma_sensitivity.png' width='700'>
 
-High process noise (sigma1=sigma2=500) makes the estimate chase every measurement closely. Low process noise (sigma1=sigma2=10) locks onto the model and barely moves when a new reading arrives. The balanced setting (sigma1=sigma2=50) sits in between and follows the physics while still correcting for sensor drift. I kept sigma3=20 for all three since the ToF noise is a physical property of the sensor.
+This cannot really see from the figure since the difference are not that huge, but based on result I read: High process noise (sigma1=sigma2=500) makes the estimate chase every measurement closely. Low process noise (sigma1=sigma2=10) locks onto the model and barely moves when a new reading arrives. The balanced setting (sigma1=sigma2=50) sits in between and follows the physics while still correcting for sensor drift. I kept sigma3=20 for all three since the ToF noise is a physical property of the sensor.
 
 ## KF on the Robot
 
@@ -180,13 +180,13 @@ The PID gains were tuned down to kp=0.025, ki=0.001, kd=0.008 to avoid saturatio
 
 <img src='/images/mae4190/lab7/lab7_kf_pid.png' width='700'>
 
-Out of 84 logged KF debug frames, 19 used a real ToF measurement and 65 ran prediction only. That is 77% pure prediction, confirming the KF is doing real work rather than just passing through sensor values. The robot stopped at 356 mm against a 304 mm target, giving a final error of 52 mm.
+Out of 84 logged KF debug frames, 19 used a real ToF measurement and 65 ran prediction only. That is 77% pure prediction, confirming the KF is doing real work rather than just passing through sensor values. The robot stopped at 251 mm against a 304 mm target, giving a final error of 53 mm.
 
 <div style="width:700px;">
   <video width='700' controls>
     <source src='/images/mae4190/lab7/car_stop_by_wall.mp4' type='video/mp4'>
   </video>
-  <div style="text-align:center; font-size:0.95em;">KF-PID wall approach, stopping at 356 mm.</div>
+  <div style="text-align:center; font-size:0.95em;">KF-PID wall approach.</div>
 </div>
 
 The firmware also includes a 3-sigma innovation gate: if a ToF reading is more than 3 standard deviations away from the prediction, it gets rejected as an outlier. This prevents a single bad reading from yanking the estimate off course at high speed.
