@@ -170,7 +170,7 @@ Out of 84 logged KF debug frames, 19 used a real ToF measurement and 65 ran pred
 
 The firmware also includes a 3-sigma innovation gate: if a ToF reading is more than 3 standard deviations away from the prediction, it gets rejected as an outlier. This prevents a single bad reading from yanking the estimate off course at high speed.
 
-Meet with my cat Mulberry! 🐱
+Meet my cat Mulberry! 🐱
 
 <img src='/images/mae4190/cats/cat9.png' width='400'>
 <img src='/images/mae4190/cats/cat10.png' width='400'>
