@@ -172,7 +172,7 @@ The firmware also includes a 3-sigma innovation gate: if a ToF reading is more t
 
 Meet with my cat Mulberry! 🐱
 
-<img src='/images/mae4190/cats/cat3.png' width='400'>
-<img src='/images/mae4190/cats/cat4.png' width='400'>
+<img src='/images/mae4190/cats/cat9.png' width='400'>
+<img src='/images/mae4190/cats/cat10.png' width='400'>
 
 [Back to MAE 4190](/mae4190/)
