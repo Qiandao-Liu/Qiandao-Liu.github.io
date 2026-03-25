@@ -43,6 +43,8 @@ Euler discretization:
 Ad = I + dt × A_c     Bd = dt × B_c
 ```
 
+The initial state is `x0 = [first_ToF_reading, 0]^T`. Position is set to the first measured distance so the filter starts where the robot actually is. Velocity is set to 0 because the robot has not moved yet at the moment of initialization. The initial covariance is set to `Sigma_u` so the filter starts with the same uncertainty as one prediction step.
+
 For the covariance matrices I set sigma1 = 50 mm, sigma2 = 50 mm/s, sigma3 = 20 mm. sigma1 and sigma2 are the standard deviations I assume for the model's position and velocity uncertainty per step. sigma3 is the ToF measurement noise. With these values the filter weighs model predictions and sensor readings roughly equally.
 
 ## KF Validation in Python
