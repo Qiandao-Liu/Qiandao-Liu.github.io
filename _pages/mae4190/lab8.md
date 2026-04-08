@@ -9,7 +9,7 @@ author_profile: true
 
 ## Goal
 
-I chose the drift stunt. The robot starts a few meters from the wall, drives forward fast, turns 180 degrees when it gets within `914 mm`, then drives back past the start line. The lab asked for repeated video evidence and timestamped plots of sensor data, KF output, and motor commands. I included four videos total. Three are drift trials and one is the older baseline that explains why I changed the control logic.
+I chose the drift stunt. The robot starts a few meters from the wall, drives forward fast, turns 180 degrees when it gets within `914 mm`, then drives back past the start line. The lab asked for repeated video evidence and timestamped plots of sensor data, KF output, and motor commands.
 
 ## Control Design
 
@@ -26,7 +26,7 @@ I changed the state machine after that. The KF is still used during the approach
 
 ## Results
 
-The first run with the new direct-turn logic fixed the old forward and backward adjustment, but it revealed a mechanical problem. The tire and floor friction was high enough that the robot hesitated during the last part of the turn. The motors still forced the chassis to the commanded heading, so the turn controller was correct, but the turn was not smooth and the run still took `7.19 s`.
+The first run with the new direct-turn logic fixed the old forward and backward adjustment, but the tire and floor friction was high enough that the robot hesitated during the last part of the turn. The motors still forced the chassis to the commanded heading, so the turn controller was correct, but the turn was not smooth and the run still took `7.19 s`.
 
 <div style="width:700px;">
   <video width="700" controls>
