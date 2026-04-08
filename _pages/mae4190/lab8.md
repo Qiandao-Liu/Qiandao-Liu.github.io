@@ -13,25 +13,61 @@ I chose the drift stunt. The robot starts a few meters from the wall, drives for
 
 ## Control Design
 
-My first version reused the Lab 7 KF wall approach controller too literally. The robot estimated distance well, but then it tried to stop at one exact wall distance before turning. Video `3114` shows the problem clearly. The car keeps making small forward and backward corrections, so the motion looks broken and the full clip lasts `12.73 s`.
+My first version reused the Lab 7 KF wall approach controller too literally. The robot estimated distance well, but then it tried to stop at one exact wall distance before turning. That made the car hunt back and forth near the wall, which broke the stunt rhythm and wasted time.
+
+<div style="width:700px;">
+  <video width="700" controls>
+    <source src="/images/mae4190/lab8/IMG_3114.mp4" type="video/mp4">
+  </video>
+  <div style="text-align:center; font-size:0.95em;">Initial baseline. The robot keeps adjusting distance before the turn instead of drifting through the stunt.</div>
+</div>
 
 I changed the state machine after that. The KF is still used during the approach because it gives a fast distance estimate between ToF readings, but once the estimated distance crosses `914 mm`, the robot immediately switches to the Lab 6 yaw PID and turns to a heading that is `180 degrees` away from the current heading. It no longer chases a precise stop distance. After the turn finishes, it drives back with a small heading hold. The final drift parameters were `APPROACH_PWM = 160`, `RETURN_PWM = 160`, `ORIENT_KP = 2.5`, `ORIENT_KI = 0`, `ORIENT_KD = 0.05`, and `RETURN_YAW_KP = 1.0`.
 
 ## Results
 
-Video `3117` is the first run with the new direct turn logic. It fixed the old forward and backward adjustment, but it revealed a mechanical problem. The tire and floor friction was high enough that the robot hesitated during the last part of the turn. The motors still forced the chassis to the commanded heading, so the turn controller was correct, but the turn was not smooth and the clip still took `7.19 s`.
+The first run with the new direct-turn logic fixed the old forward and backward adjustment, but it revealed a mechanical problem. The tire and floor friction was high enough that the robot hesitated during the last part of the turn. The motors still forced the chassis to the commanded heading, so the turn controller was correct, but the turn was not smooth and the run still took `7.19 s`.
 
-To reduce that sticking effect, I wrapped electrical tape around the outer surface of the tires. Photo `3125` shows the hardware change. After that, videos `3122` and `3126` looked much better. The approach, turn, and return flow together with no visible pause. Their clip lengths were `5.44 s` and `4.29 s`, which is much faster than both the old baseline and the untaped direct turn.
+<div style="width:700px;">
+  <video width="700" controls>
+    <source src="/images/mae4190/lab8/IMG_3117.mp4" type="video/mp4">
+  </video>
+  <div style="text-align:center; font-size:0.95em;">Direct-turn logic without the tire modification. The robot turns the right amount, but the high friction causes a visible pause.</div>
+</div>
+
+<img src="/images/mae4190/lab8/lab8_drift.png" width="700">
+<div style="text-align:center; font-size:0.95em;">Sensor and control plot for the first direct-turn run.</div>
+
+To reduce that sticking effect, I wrapped electrical tape around the outer surface of the tires. That lowered the tire-floor friction enough to make the turn much smoother.
+
+<img src="/images/mae4190/lab8/IMG_3125.JPG" width="700">
+
+<div style="text-align:center; font-size:0.95em;">Electrical tape added around the tire surface to reduce turning friction.</div>
+
+After that, the next two runs looked much better. The approach, turn, and return flow together with no visible pause. Their clip lengths were `5.44 s` and `4.29 s`, which is much faster than both the old baseline and the untaped direct-turn version.
 
 The tradeoff is that the lower friction causes some chassis drift during braking and rotation. The robot still turns the correct amount, but it does not always pivot around exactly the same point on the floor. It may slide a little left or right before coming back. I am okay with that trade because the stunt goal is a fast continuous drift and return, not a perfect zero radius spin in place. The three drift plots below show the raw ToF, KF estimate, heading, heading error, gyro rate, and motor command versus time. In the later runs, the return segment starts only after the heading trace reaches the full turn target, so the `180 degree` rotation is still enforced by the PID controller rather than by luck.
 
-Overall, I think the report story is:
+<div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-start;">
+  <div style="width:49%; text-align:center;">
+    <video width="100%" controls>
+      <source src="/images/mae4190/lab8/IMG_3122.mp4" type="video/mp4">
+    </video>
+    <div style="font-size:0.95em;">Final run after the tire change. The whole stunt is continuous and much smoother.</div>
+  </div>
+  <div style="width:49%; text-align:center;">
+    <video width="100%" controls>
+      <source src="/images/mae4190/lab8/IMG_3126.mp4" type="video/mp4">
+    </video>
+    <div style="font-size:0.95em;">Another final run. This one is the fastest clip and still returns cleanly.</div>
+  </div>
+</div>
 
-`3114` shows why the exact-distance stop idea was too slow.
+<img src="/images/mae4190/lab8/lab8_drift_1.png" width="700">
+<div style="text-align:center; font-size:0.95em;">Sensor and control plot for the first taped-tire run.</div>
 
-`3117` shows the improved logic but also the friction problem.
-
-`3122` and `3126` show the final tuned system with the tape modification, which gives the smoothest and fastest runs.
+<img src="/images/mae4190/lab8/lab8_drift_2.png" width="700">
+<div style="text-align:center; font-size:0.95em;">Sensor and control plot for the fastest taped-tire run.</div>
 
 ## Code
 
@@ -165,48 +201,6 @@ while not _drift_done:
 
 </div>
 </details>
-
-## Evidence
-
-<div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-start;">
-  <div style="width:49%; text-align:center;">
-    <video width="100%" controls>
-      <source src="/images/mae4190/lab8/IMG_3114.mp4" type="video/mp4">
-    </video>
-    <div style="font-size:0.95em;">3114. Old KF stop then turn logic. The car keeps adjusting distance before the turn.</div>
-  </div>
-  <div style="width:49%; text-align:center;">
-    <video width="100%" controls>
-      <source src="/images/mae4190/lab8/IMG_3117.mp4" type="video/mp4">
-    </video>
-    <div style="font-size:0.95em;">3117. Direct turn logic works, but the high friction makes the last part of the turn pause.</div>
-  </div>
-  <div style="width:49%; text-align:center;">
-    <video width="100%" controls>
-      <source src="/images/mae4190/lab8/IMG_3122.mp4" type="video/mp4">
-    </video>
-    <div style="font-size:0.95em;">3122. After adding tape to the tires, the full stunt becomes much smoother.</div>
-  </div>
-  <div style="width:49%; text-align:center;">
-    <video width="100%" controls>
-      <source src="/images/mae4190/lab8/IMG_3126.mp4" type="video/mp4">
-    </video>
-    <div style="font-size:0.95em;">3126. Fastest final run. Smooth turn and return with small lateral drift.</div>
-  </div>
-</div>
-
-<img src="/images/mae4190/lab8/IMG_3125.JPG" width="700">
-
-<div style="text-align:center; font-size:0.95em;">3125. Electrical tape on the tire surface to reduce turning friction.</div>
-
-<img src="/images/mae4190/lab8/lab8_drift.png" width="700">
-<div style="text-align:center; font-size:0.95em;">Drift plot for 3117.</div>
-
-<img src="/images/mae4190/lab8/lab8_drift_1.png" width="700">
-<div style="text-align:center; font-size:0.95em;">Drift plot for 3122.</div>
-
-<img src="/images/mae4190/lab8/lab8_drift_2.png" width="700">
-<div style="text-align:center; font-size:0.95em;">Drift plot for 3126.</div>
 
 Meet my cat Mulberry! 🐱
 
