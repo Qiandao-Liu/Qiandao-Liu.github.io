@@ -243,6 +243,17 @@ The three-way comparison shows P and PD settle similarly fast, while PID removes
 
 P control was already enough for this task and even beat PD and PID in final error. I think that happened because turning in place on flat ground is simpler than high speed wall approach, so extra I and D added little here. On rough ground or in faster motion, PID would matter more.
 
+## Robustness Test
+
+I also tested robustness by repeatedly kicking the robot during an in-place PID turn. Each kick created a large transient yaw disturbance, but the controller kept correcting back toward the commanded heading and still finished near the target angle. This shows the orientation PID was not only tuned for clean trials, but could also reject short external disturbances.
+
+<div style="width:700px;">
+  <video width='700' controls>
+    <source src='/images/mae4190/lab6/pid_robustness_kick_test.mp4' type='video/mp4'>
+  </video>
+  <div style="text-align:center; font-size:0.95em;">Orientation PID robustness test with repeated external kicks.</div>
+</div>
+
 ## Setpoint Change Mid-Run
 
 To verify live setpoint updates, I started at 90°, let the robot settle, then sent `SET_ORIENT_TARGET -90` over BLE at `t = 4 s` while the PID loop was still running. The robot reached 89.9° first, then turned toward -90°.
