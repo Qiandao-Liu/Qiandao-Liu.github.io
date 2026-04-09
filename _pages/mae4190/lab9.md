@@ -9,7 +9,7 @@ author_profile: true
 
 ## Goal
 
-The goal of this lab was to build a static map of the room from several marked robot positions, transform every ToF reading into the room frame, and then convert the point cloud into a line based map for later localization and planning. I used orientation control, not open loop control. The robot turned in small angular steps, stopped, measured distance, and then turned to the next heading.
+The goal of this lab was to build a static room map from several marked robot positions, transform every ToF reading into the room frame, and convert the point cloud into a line based map for later localization and planning. I used orientation control. The robot turned in small angular steps, stopped, measured distance, and then turned to the next heading.
 
 I scanned the four required points `(5, -3)`, `(-3, -2)`, `(0, 3)`, and `(5, 3)`. I also added `(0, 0)` because the extra center view made the merged map easier to clean up.
 
@@ -22,9 +22,11 @@ I chose the right ToF sensor instead of the front sensor because it is closer to
 
 For control, I used a `P only` orientation controller with a `3 degree` target spacing and a `380 degree` sweep. I intentionally overswept by `20 degrees` because static friction sometimes caused the last part of a `360 degree` turn to come up short. Each pass therefore targeted `127` headings. I ran both clockwise and counterclockwise passes at each location to check repeatability. Across the final `10` passes, the robot collected `1270` right sensor samples and all `1270` were valid. The mean absolute heading error averaged `4.51 degrees` across runs, and the worst case heading error was `10.2 degrees`.
 
+The lab also asked for an estimate of map error from orientation control. In the middle of a `4 x 4 m` empty room, the wall would be about `2 m` away. Using the measured heading error only, the average lateral error would be about `0.157 m`, and the worst case lateral error would be about `0.354 m`. That is a rough upper bound, but it matches the final map. Outer walls stay more consistent than interior features.
+
 One thing I had to correct during post processing was the room frame start heading for each scan. I first assumed every scan started with the same room heading, but the actual robot placement differed by `90 degrees` at several locations. I fixed that with rigid per scan `theta` corrections in the notebook. I did not scale any scan.
 
-The figure below shows the direct relationship between angle and measured distance for all five locations. Each subplot overlays the clockwise and counterclockwise passes. The top row in each scan figure is the most useful one for mapping because it shows how the measured heading lines up with the right ToF distance profile. The lower plots show that the measured heading stayed close to the commanded heading, which is why I trusted IMU heading instead of assuming perfectly uniform angular spacing.
+The figure below shows the direct relationship between angle and measured distance for all five locations. Each subplot overlays the clockwise and counterclockwise passes. The measured heading stayed close to the commanded heading, so I trusted IMU heading instead of assuming perfectly uniform angular spacing.
 
 <img src="/images/mae4190/lab9/lab9_angle_relationship_overview.png" width="700">
 <div style="text-align:center; font-size:0.95em;">Angle to distance relationship for all five scan locations. Blue is clockwise and orange is counterclockwise.</div>
@@ -93,24 +95,59 @@ void handle_map() {
 </details>
 
 <details>
-<summary>Python: scan command and room frame transform</summary>
+<summary>Python: BLE callback, parsing, and map collection</summary>
 <div markdown="1">
 
 ```python
-SWEEP_DEG = 380
-STEP_DEG = 3
-SAMPLES_GOAL = math.ceil(SWEEP_DEG / STEP_DEG)
-ORIENT_KP = 2.0
-ORIENT_KI = 0.0
-ORIENT_KD = 0.0
+_map_buf = []
+_map_done = False
+
+def map_notify_handler(uuid, bytearray_data):
+    global _map_buf, _map_done
+    msg = ble.bytearray_to_string(bytearray_data).strip()
+    _map_buf.append(msg)
+    if msg.startswith('MAP_END|'):
+        _map_done = True
+
+def parse_map_messages(messages, scan_name='scan', turn_dir=TURN_DIR_CW, pass_name='pass'):
+    rows = []
+    for msg in messages:
+        if msg.startswith('MAP|'):
+            parts = msg.split('|')
+            rows.append({
+                'scan_name': scan_name,
+                'target_deg': int(parts[1]) / 10.0,
+                'heading_deg': int(parts[2]) / 10.0,
+                'right_mm': int(parts[4]),
+                'time_ms': int(parts[5]),
+                'turn_dir': turn_dir,
+                'pass_name': pass_name,
+            })
+    return pd.DataFrame(rows)
 
 def run_map_scan(scan_name, step_deg=STEP_DEG, samples_goal=SAMPLES_GOAL,
-                 timeout_ms=MAP_TIMEOUT_MS, turn_dir=TURN_DIR_CW,
-                 pass_name='pass', sweep_deg=SWEEP_DEG):
+                 timeout_ms=MAP_TIMEOUT_MS, turn_dir=TURN_DIR_CW, sweep_deg=SWEEP_DEG):
+    global _map_buf, _map_done
+    _map_buf = []
+    _map_done = False
+    ble.start_notify(ble.uuid['RX_STRING'], map_notify_handler)
     ble.send_command(CMD.MAP_START,
                      f'{step_deg}|{samples_goal}|{timeout_ms}|{turn_dir}|{sweep_deg}')
-    ...
+    ble.send_command(CMD.GET_MAP_DATA, '')
+    while not _map_done:
+        time.sleep(0.10)
+    ble.stop_notify(ble.uuid['RX_STRING'])
+    return parse_map_messages(_map_buf, scan_name=scan_name, turn_dir=turn_dir)
+```
 
+</div>
+</details>
+
+<details>
+<summary>Python: room frame transform and line map export</summary>
+<div markdown="1">
+
+```python
 def sensor_hits_room(df, pose, sensor='right', run_name='scan', scan_key=None, pass_name='pass'):
     valid = df['right_valid']
     ranges_ft = df.loc[valid, 'right_ft'].to_numpy()
@@ -125,10 +162,26 @@ def sensor_hits_room(df, pose, sensor='right', run_name='scan', scan_key=None, p
         hit_room = room_origin + body_to_room @ (RIGHT_SENSOR_OFFSET_FT + ray_body)
         rows.append({'scan_key': scan_key, 'x_ft': hit_room[0], 'y_ft': hit_room[1]})
     return pd.DataFrame(rows)
+
+def export_line_map(line_starts, line_ends):
+    xs = [p[0] for p in line_starts]
+    ys = [p[1] for p in line_starts]
+    xe = [p[0] for p in line_ends]
+    ye = [p[1] for p in line_ends]
+    return {
+        'line_starts': line_starts,
+        'line_ends': line_ends,
+        'x_starts': xs,
+        'y_starts': ys,
+        'x_ends': xe,
+        'y_ends': ye,
+    }
 ```
 
 </div>
 </details>
+
+The transform is a rigid 2D transform. I used robot room position as translation, corrected scan start heading plus measured IMU heading as rotation, and fixed right sensor yaw as the sensor frame offset. Each hit was computed as `p_room = p_robot + R(theta_scan + theta_imu) (p_sensor_offset + p_ray)`.
 
 ## Individual Scans
 
@@ -172,14 +225,17 @@ The five videos below show one measurement run at each scan location. After both
   </div>
 </div>
 
-The single scan plots were my sanity check before merging. They matched the expected nearby wall directions, which told me the angle logging and sensor transform were basically correct.
+The single scan plots were my sanity check before merging. They matched the expected nearby wall directions, which told me the angle logging and sensor transform were correct.
+
+<img src="/images/mae4190/lab9/scan_5_-3_polar.png" width="700">
+<div style="text-align:center; font-size:0.95em;">Representative polar sanity check at `(5, -3)`. The clockwise and counterclockwise passes overlap closely.</div>
 
 <img src="/images/mae4190/lab9/scan_5_-3_angle_relationship.png" width="700">
 <div style="text-align:center; font-size:0.95em;">Representative angle tracking and angle to distance plot for the `(5, -3)` scan.</div>
 
 ## Merged Map
 
-I merged all scans into the room frame with rigid transforms only. First I converted each right sensor hit into room coordinates using the robot position, the corrected room heading, and the fixed right sensor mounting angle. Then I cleaned the cloud with two simple filters: a distance range filter from `0.15 ft` to `12 ft`, and a per scan radius filter that kept only points within `6 ft` of the scan origin. This removed most of the far grazing angle returns without deleting the useful walls near each robot location.
+I merged all scans into the room frame with rigid transforms only. Then I cleaned the cloud with two simple filters: a distance range filter from `0.15 ft` to `12 ft`, and a per scan radius filter that kept only points within `6 ft` of the scan origin. This removed most of the far grazing angle returns without deleting the useful nearby walls.
 
 The raw merged cloud is shown below. It contains all `1270` valid measurements from the `10` runs.
 
@@ -198,7 +254,7 @@ I manually fit line segments to the cleaned point cloud and exported the line en
 <img src="/images/mae4190/lab9/lab9_global_map_direction_fixed_clean_wall.png" width="700">
 <div style="text-align:center; font-size:0.95em;">Black lines are the map estimated from the point cloud. Green lines are the real walls and obstacles.</div>
 
-The outside walls came out very well. Those boundaries are the most reliable part of the map because they were seen from several locations and at more favorable angles. The middle wall segments and obstacles are less accurate. The main failure mode is that the point cloud usually makes obstacles look a little larger than they really are. That is still acceptable for path planning because it is conservative. The robot may choose a slightly longer path, but it is less likely to cut too close and collide. I think the remaining error comes from three sources: heading error during each turn, small placement error when moving the robot between marks, and ToF bias when the beam hits surfaces at an oblique angle.
+The outside walls came out very well because they were seen from several locations and at better angles. The middle wall segments and obstacles are less accurate. The main failure mode is that the point cloud usually makes obstacles look a little larger than they really are. That is acceptable for path planning because it is conservative. The robot may choose a slightly longer path, but it is less likely to collide. I think the remaining error comes from heading error during each turn, small placement error between marks, and ToF bias at oblique angles.
 
 Meet my cat Mulberry! 🐱
 
