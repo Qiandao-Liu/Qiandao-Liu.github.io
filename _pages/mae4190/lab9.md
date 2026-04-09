@@ -24,6 +24,11 @@ For control, I used a `P only` orientation controller with a `3 degree` target s
 
 One thing I had to correct during post processing was the room frame start heading for each scan. I first assumed every scan started with the same room heading, but the actual robot placement differed by `90 degrees` at several locations. I fixed that with rigid per scan `theta` corrections in the notebook. I did not scale any scan.
 
+The figure below shows the direct relationship between angle and measured distance for all five locations. Each subplot overlays the clockwise and counterclockwise passes. The top row in each scan figure is the most useful one for mapping because it shows how the measured heading lines up with the right ToF distance profile. The lower plots show that the measured heading stayed close to the commanded heading, which is why I trusted IMU heading instead of assuming perfectly uniform angular spacing.
+
+<img src="/images/mae4190/lab9/lab9_angle_relationship_overview.png" width="700">
+<div style="text-align:center; font-size:0.95em;">Angle to distance relationship for all five scan locations. Blue is clockwise and orange is counterclockwise.</div>
+
 ## Code
 
 <details>
@@ -168,6 +173,9 @@ The five videos below show one measurement run at each scan location. After both
 </div>
 
 The single scan plots were my sanity check before merging. They matched the expected nearby wall directions, which told me the angle logging and sensor transform were basically correct.
+
+<img src="/images/mae4190/lab9/scan_5_-3_angle_relationship.png" width="700">
+<div style="text-align:center; font-size:0.95em;">Representative angle tracking and angle to distance plot for the `(5, -3)` scan.</div>
 
 ## Merged Map
 
