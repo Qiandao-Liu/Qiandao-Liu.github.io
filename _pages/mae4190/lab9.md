@@ -11,7 +11,7 @@ author_profile: true
 
 The goal of this lab was to build a static room map from several marked robot positions, transform every ToF reading into the room frame, and convert the point cloud into a line based map for later localization and planning. I used orientation control. The robot turned in small angular steps, stopped, measured distance, and then turned to the next heading.
 
-I scanned the four required points `(5, -3)`, `(-3, -2)`, `(0, 3)`, and `(5, 3)`. I also added `(0, 0)` because the extra center view made the merged map easier to clean up.
+I scanned the four required points `(5, -3)`, `(-3, -2)`, `(0, 3)`, and `(5, 3)`. I also added `(0, 0)` to improve the merged map.
 
 ## Sensing And Control
 
@@ -20,13 +20,13 @@ I chose the right ToF sensor instead of the front sensor because it is closer to
 <img src="/images/mae4190/lab9/all_parts_distribution_diagram.png" width="700">
 <div style="text-align:center; font-size:0.95em;">Mechanical layout of the robot. The right ToF sensor is closer to the rotation center than the front ToF sensor.</div>
 
-For control, I used a `P only` orientation controller with a `3 degree` target spacing and a `380 degree` sweep. I intentionally overswept by `20 degrees` because static friction sometimes caused the last part of a `360 degree` turn to come up short. Each pass therefore targeted `127` headings. I ran both clockwise and counterclockwise passes at each location to check repeatability. Across the final `10` passes, the robot collected `1270` right sensor samples and all `1270` were valid. The mean absolute heading error averaged `4.51 degrees` across runs, and the worst case heading error was `10.2 degrees`.
+For control, I used a `P only` orientation controller with a `3 degree` target spacing and a `380 degree` sweep. I overswept by `20 degrees` because static friction sometimes caused the last part of a `360 degree` turn to come up short. Each pass therefore targeted `127` headings. I started every scan from the same room reference direction, then applied only rigid per scan heading corrections during post processing. I ran both clockwise and counterclockwise passes at each location to check repeatability. Across the final `10` passes, the robot collected `1270` right sensor samples and all `1270` were valid. The mean absolute heading error averaged `4.51 degrees`, and the worst case heading error was `10.2 degrees`.
 
-The lab also asked for an estimate of map error from orientation control. In the middle of a `4 x 4 m` empty room, the wall would be about `2 m` away. Using the measured heading error only, the average lateral error would be about `0.157 m`, and the worst case lateral error would be about `0.354 m`. That is a rough upper bound, but it matches the final map. Outer walls stay more consistent than interior features.
+The lab also asked for an estimate of map error from orientation control. In the middle of a `4 x 4 m` empty room, the wall would be about `2 m` away. Using the measured heading error only, the average lateral error would be about `0.157 m`, and the worst case lateral error would be about `0.354 m`. That rough upper bound matches the final map.
 
 One thing I had to correct during post processing was the room frame start heading for each scan. I first assumed every scan started with the same room heading, but the actual robot placement differed by `90 degrees` at several locations. I fixed that with rigid per scan `theta` corrections in the notebook. I did not scale any scan.
 
-The figure below shows the direct relationship between angle and measured distance for all five locations. Each subplot overlays the clockwise and counterclockwise passes. The measured heading stayed close to the commanded heading, so I trusted IMU heading instead of assuming perfectly uniform angular spacing.
+The figure below shows the direct relationship between angle and measured distance for all five locations. Each subplot overlays the clockwise and counterclockwise passes. The measured heading stayed close to the commanded heading, so I trusted logged IMU heading instead of assuming perfectly uniform angular spacing. The map used only fresh right ToF readings while the robot was stopped. I did not use Kalman extrapolation.
 
 <img src="/images/mae4190/lab9/lab9_angle_relationship_overview.png" width="700">
 <div style="text-align:center; font-size:0.95em;">Angle to distance relationship for all five scan locations. Blue is clockwise and orange is counterclockwise.</div>
@@ -181,7 +181,7 @@ def export_line_map(line_starts, line_ends):
 </div>
 </details>
 
-The transform is a rigid 2D transform. I used robot room position as translation, corrected scan start heading plus measured IMU heading as rotation, and fixed right sensor yaw as the sensor frame offset. Each hit was computed as `p_room = p_robot + R(theta_scan + theta_imu) (p_sensor_offset + p_ray)`.
+The transform is a rigid 2D transform. I used robot room position as translation, corrected scan start heading plus measured IMU heading as rotation, and fixed right sensor yaw as the sensor frame offset.
 
 ## Individual Scans
 
@@ -193,45 +193,45 @@ The five videos below show one measurement run at each scan location. After both
     <video width="100%" controls>
       <source src="/images/mae4190/lab9/IMG_3130.mp4" type="video/mp4">
     </video>
-    <div style="font-size:0.95em;">Scan at `(5, -3)`.</div>
+    <div style="font-size:0.95em;">Scan at (5, -3).</div>
   </div>
   <div style="width:48%; text-align:center;">
     <img src="/images/mae4190/lab9/scan_0_0_pcd.png" width="100%">
     <video width="100%" controls>
       <source src="/images/mae4190/lab9/IMG_3131.mp4" type="video/mp4">
     </video>
-    <div style="font-size:0.95em;">Scan at `(0, 0)`.</div>
+    <div style="font-size:0.95em;">Scan at (0, 0).</div>
   </div>
   <div style="width:48%; text-align:center;">
     <img src="/images/mae4190/lab9/scan_-3_-2_pcd.png" width="100%">
     <video width="100%" controls>
       <source src="/images/mae4190/lab9/IMG_3132.mp4" type="video/mp4">
     </video>
-    <div style="font-size:0.95em;">Scan at `(-3, -2)`.</div>
+    <div style="font-size:0.95em;">Scan at (-3, -2).</div>
   </div>
   <div style="width:48%; text-align:center;">
     <img src="/images/mae4190/lab9/scan_0_3_pcd.png" width="100%">
     <video width="100%" controls>
       <source src="/images/mae4190/lab9/IMG_3133.mp4" type="video/mp4">
     </video>
-    <div style="font-size:0.95em;">Scan at `(0, 3)`.</div>
+    <div style="font-size:0.95em;">Scan at (0, 3).</div>
   </div>
   <div style="width:48%; text-align:center;">
     <img src="/images/mae4190/lab9/scan_5_3_pcd.png" width="100%">
     <video width="100%" controls>
       <source src="/images/mae4190/lab9/IMG_3134.mp4" type="video/mp4">
     </video>
-    <div style="font-size:0.95em;">Scan at `(5, 3)`.</div>
+    <div style="font-size:0.95em;">Scan at (5, 3).</div>
   </div>
 </div>
 
-The single scan plots were my sanity check before merging. They matched the expected nearby wall directions, which told me the angle logging and sensor transform were correct.
+The single scan plots were my sanity check before merging.
 
 <img src="/images/mae4190/lab9/scan_5_-3_polar.png" width="700">
-<div style="text-align:center; font-size:0.95em;">Representative polar sanity check at `(5, -3)`. The clockwise and counterclockwise passes overlap closely.</div>
+<div style="text-align:center; font-size:0.95em;">Representative polar sanity check at (5, -3). The clockwise and counterclockwise passes overlap closely.</div>
 
 <img src="/images/mae4190/lab9/scan_5_-3_angle_relationship.png" width="700">
-<div style="text-align:center; font-size:0.95em;">Representative angle tracking and angle to distance plot for the `(5, -3)` scan.</div>
+<div style="text-align:center; font-size:0.95em;">Representative angle tracking and angle to distance plot for the (5, -3) scan.</div>
 
 ## Merged Map
 
@@ -254,7 +254,7 @@ I manually fit line segments to the cleaned point cloud and exported the line en
 <img src="/images/mae4190/lab9/lab9_global_map_direction_fixed_clean_wall.png" width="700">
 <div style="text-align:center; font-size:0.95em;">Black lines are the map estimated from the point cloud. Green lines are the real walls and obstacles.</div>
 
-The outside walls came out very well because they were seen from several locations and at better angles. The middle wall segments and obstacles are less accurate. The main failure mode is that the point cloud usually makes obstacles look a little larger than they really are. That is acceptable for path planning because it is conservative. The robot may choose a slightly longer path, but it is less likely to collide. I think the remaining error comes from heading error during each turn, small placement error between marks, and ToF bias at oblique angles.
+The outside walls came out very well because they were seen from several locations and at better angles. The clockwise and counterclockwise passes also overlapped closely on those walls, which gave me confidence that repeatability was good enough for merging. The middle wall segments and obstacles are less accurate. The main failure mode is that the point cloud usually makes obstacles look a little larger than they really are. That is acceptable for path planning because it is conservative. The robot may choose a slightly longer path, but it is less likely to collide. The remaining error mainly comes from heading error, placement error between marks, and ToF bias at oblique angles.
 
 Meet my cat Mulberry! 🐱
 
