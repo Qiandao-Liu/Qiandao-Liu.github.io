@@ -194,7 +194,7 @@ The outside walls came out very well. Those boundaries are the most reliable par
 
 Meet my cat Mulberry! 🐱
 
-<img src="/images/mae4190/cats/cat19.png" width="400">
-<img src="/images/mae4190/cats/cat20.png" width="400">
+<img src="/images/mae4190/cats/cat12.png" width="400">
+<img src="/images/mae4190/cats/cat11.png" width="400">
 
 [Back to MAE 4190](/mae4190/)
