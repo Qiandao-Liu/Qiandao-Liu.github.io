@@ -237,6 +237,30 @@ The single scan plots were my sanity check before merging.
 
 I merged all scans into the room frame with rigid transforms only. Then I cleaned the cloud with two simple filters: a distance range filter from `0.15 ft` to `12 ft`, and a per scan radius filter that kept only points within `6 ft` of the scan origin. This removed most of the far grazing angle returns without deleting the useful nearby walls.
 
+```python
+def cleanup_map_points(points_room, scan_poses,
+                       min_range_ft=0.15, max_range_ft=12.0, max_scan_radius_ft=6.0):
+    df = points_room.copy()
+
+    # Remove obviously bad ranges from the merged cloud.
+    df = df[(df['range_ft'] >= min_range_ft) & (df['range_ft'] <= max_range_ft)].copy()
+
+    # Remove far hits that are too far from the scan origin.
+    keep_rows = []
+    for scan_key, g in df.groupby('scan_key'):
+        pose = scan_poses[scan_key]
+        dx = g['x_ft'] - pose['x_ft']
+        dy = g['y_ft'] - pose['y_ft']
+        keep_rows.append(g[np.sqrt(dx**2 + dy**2) <= max_scan_radius_ft])
+
+    return pd.concat(keep_rows, ignore_index=True)
+
+
+points_clean = cleanup_map_points(points_room, scan_poses)
+```
+
+This cleanup was done after transforming all hits into the room frame. The first filter removed impossible or very short readings, and the second filter removed distant grazing angle returns that tended to distort the walls.
+
 The raw merged cloud is shown below. It contains all `1270` valid measurements from the `10` runs.
 
 <img src="/images/mae4190/lab9/lab9_global_map_direction_fixed_raw.png" width="700">
