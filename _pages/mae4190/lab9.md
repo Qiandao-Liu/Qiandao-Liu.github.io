@@ -237,6 +237,10 @@ The single scan plots were my sanity check before merging.
 
 I merged all scans into the room frame with rigid transforms only. Then I cleaned the cloud with two simple filters: a distance range filter from `0.15 ft` to `12 ft`, and a per scan radius filter that kept only points within `6 ft` of the scan origin. This removed most of the far grazing angle returns without deleting the useful nearby walls.
 
+<details>
+<summary>Python: map cleanup after room frame transform</summary>
+<div markdown="1">
+
 ```python
 def cleanup_map_points(points_room, scan_poses,
                        min_range_ft=0.15, max_range_ft=12.0, max_scan_radius_ft=6.0):
@@ -258,6 +262,9 @@ def cleanup_map_points(points_room, scan_poses,
 
 points_clean = cleanup_map_points(points_room, scan_poses)
 ```
+
+</div>
+</details>
 
 This cleanup was done after transforming all hits into the room frame. The first filter removed impossible or very short readings, and the second filter removed distant grazing angle returns that tended to distort the walls.
 
