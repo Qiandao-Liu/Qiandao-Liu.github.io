@@ -34,25 +34,26 @@ I drove the robot at a constant PWM of 80 toward the wall and logged ToF distanc
 
 <img src='/images/mae4190/lab7/lab7_step_response_1.png' width='700'>
 
-The top panel overlays piecewise linear fits on the raw distance data to show where the slope was measured. The bottom panel confirms the motor input was a constant step at PWM 80 throughout the run. From the velocity curve I extracted two estimates of steady-state speed. The finite-difference method gave 1235 mm/s, and piecewise linear fitting across 50%-overlap segments gave 1225 mm/s. They agree to within 1%, so I used the piecewise-linear result since it is less sensitive to noise spikes at individual ToF samples.
+The top panel overlays piecewise linear fits on the raw distance data to show where the slope was measured. The bottom panel confirms the motor input was a constant step at PWM 80 throughout the run. From the velocity curve I extracted two estimates of steady-state speed. The finite-difference method gave 1235 mm/s, and piecewise linear fitting across 50%-overlap segments gave 1225 mm/s. They agree to within 1%, so I used the piecewise-linear result as the reference speed scale for the offline model fit.
 
-The robot first started moving at t = 0.241 s, reached 90% of v_ss at t = 1.238 s, giving a rise time of 997 ms. The speed at that 90% point was 1103 mm/s. From those three numbers:
+The robot first started moving at t = 0.241 s, reached 90% of v_ss at t = 1.238 s, giving a rise time of 997 ms. The speed at that 90% point was 1103 mm/s. I used those numbers to choose first-order velocity dynamics for the offline KF validation. In the robot firmware the control input is normalized PWM, so the final on-robot `d` and `m` values were treated as tuned model coefficients rather than as a strict one-shot identification result. The important point for the report is that the same normalized input convention was used in both the Python replay and the embedded code:
 
 ```
-v_ss = 1225 mm/s    →  d = 1/v_ss  = 0.000816  s/mm
-t_90 = 997 ms       →  m = d × t_90 / ln(10) = 0.000353  s²/mm
+v_ss = 1225 mm/s
+t_90 = 997 ms
+u = motor_pwm / STEP_PWM
 ```
 
 ## Kalman Filter Setup
 
-The continuous-time state space model is:
+The continuous-time state space model used in code is:
 
 ```
-A_c = [[0,    -1  ],      B_c = [[0       ],      C = [[1, 0]]
+A_c = [[0,     1  ],      B_c = [[0       ],      C = [[1, 0]]
        [0,   -d/m ]]             [1/m     ]]
 ```
 
-State is `[distance, velocity]`. C measures distance directly with a positive sign because the ToF reads positive values as the robot approaches.
+State is `[distance, velocity]`. `C` measures distance directly. The firmware uses a sign convention where forward wall-approach PWM is stored as a negative normalized control input, so the distance estimate still decreases during approach even though the state equation uses `distance_dot = velocity`.
 
 I computed the actual PID loop period from real timestamps instead of guess: `dt = (t_max - t_min) / (N-1)`, which gave 7.60 ms. Hardcoding 20 ms would have degraded the Ad and Bd accuracy by 2.6x.
 
@@ -112,7 +113,7 @@ for _, pid_row in pid_sorted.iterrows():
 </div>
 </details>
 
-The estimate tracks the raw ToF readings closely and produces a smooth velocity signal that is not available from the sensor alone.
+The estimate follows the same overall trend as the raw ToF readings while filling in the gaps between sensor updates. It also produces a smooth velocity signal that is not available from the ToF alone.
 
 I also compared three sigma configurations to understand the trade-off:
 
@@ -122,7 +123,7 @@ This cannot really see from the figure since the difference are not that huge, b
 
 ## KF on the Robot
 
-The Artemis runs `kf_step_fn()` every PID cycle. It discretizes A and B fresh each step using the actual elapsed `dt_s`, so the filter adapts to loop jitter. When a new ToF reading arrives, it runs prediction and update. Between readings it runs prediction only, supplying the PID controller with an estimated distance.
+The Artemis runs `kf_step_fn()` every PID cycle. It discretizes A and B fresh each step using the actual elapsed `dt_s`, so the filter adapts to loop jitter. The control input passed into the KF is the normalized PWM command, not raw PWM counts. When a new ToF reading arrives, it runs prediction and update. Between readings it runs prediction only, supplying the PID controller with an estimated distance.
 
 <details>
 <summary>Arduino: KF step function on Artemis</summary>
@@ -180,7 +181,7 @@ The PID gains were tuned down to kp=0.025, ki=0.001, kd=0.008 to avoid saturatio
 
 <img src='/images/mae4190/lab7/lab7_kf_pid.png' width='700'>
 
-Out of 84 logged KF debug frames, 19 used a real ToF measurement and 65 ran prediction only. That is 77% pure prediction, confirming the KF is doing real work rather than just passing through sensor values. The robot stopped at 251 mm against a 304 mm target, giving a final error of 53 mm.
+Out of 84 logged KF debug frames, 19 used a real ToF measurement and 65 ran prediction only. That is 77% prediction-only steps, so most PID cycles relied on the model estimate between sparse ToF updates. The robot stopped at 251 mm against a 304 mm target, giving a final error of 53 mm.
 
 <div style="width:700px;">
   <video width='700' controls>
@@ -189,7 +190,7 @@ Out of 84 logged KF debug frames, 19 used a real ToF measurement and 65 ran pred
   <div style="text-align:center; font-size:0.95em;">KF-PID wall approach.</div>
 </div>
 
-The firmware also includes a 3-sigma innovation gate: if a ToF reading is more than 3 standard deviations away from the prediction, it gets rejected as an outlier. This prevents a single bad reading from yanking the estimate off course at high speed.
+The firmware also includes a 3-sigma innovation gate with a minimum threshold. If a ToF reading is far from the current prediction, the code can skip that update and continue with prediction only. In this experiment that gate acted as a conservative safeguard for occasional bad readings, but it also means the final embedded behavior depends on both the model tuning and the gate threshold.
 
 Meet my cat Mulberry! 🐱
 
