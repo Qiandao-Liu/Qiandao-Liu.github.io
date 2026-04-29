@@ -9,21 +9,21 @@ author_profile: true
 
 ## Overview
 
-The goal of this lab was to run the Bayes filter on the real robot instead of in simulation. For the real robot I only used the update step from a 360 degree observation loop, because the car does not have trustworthy enough motion information to make the prediction step worthwhile here. The main problem was perceptual aliasing on the +x side of the map. Several places produce very similar range signatures, so a pure observation update with a uniform prior can jump to the wrong cell even when the scan itself is clean.
+The goal of this lab was to run the Bayes filter on the real robot. On hardware I used only the update step from a 360 degree observation loop. The main issue was perceptual aliasing on the +x side of the map: several cells produce similar range signatures, so a uniform-prior update can jump to the wrong place.
 
 ## Simulation check
 
-I first ran the provided simulation notebook to make sure the virtual pipeline still behaved as expected before touching the real robot integration.
+I first ran the provided simulation notebook to verify that the reference Bayes filter behavior was still correct before moving to BLE and real sensors.
 
 <img src='/images/mae4190/lab11/sim.png' width='700'>
 
-The simulation result looked normal, so any later failures on the real robot were much more likely to come from sensing and environment ambiguity rather than from the Bayes filter implementation itself.
+The final plot looked normal, so later failures on the real robot were much more likely to come from sensing and map ambiguity than from the filter math itself. I also ran a longer simulated trajectory and confirmed that the Bayes-filter estimate kept following ground truth better than raw odometry.
+
+<img src='/images/mae4190/lab11/traj.png' width='700'>
 
 ## Observation loop on the real robot
 
-The lab expects 18 readings that are 20 degrees apart, starting from the robot heading and rotating counter-clockwise. Instead of writing a separate Lab 11 scan routine, I reused my Lab 9 map scan. The firmware already knew how to rotate to stable heading targets, wait for the sensors to settle, and stream the scan data back over BLE. I kept the firmware scan dense at 3 degree increments over about one full turn, then downsampled those physical samples in Python to the 18 bearings expected by the localization notebook.
-
-I used the right ToF sensor for the final observation vector. That sensor sits closer to the robot rotation center than the front sensor, so its geometry produces less parallax error during an in-place turn. I also subtracted the small mount offset in Python so the measured range better matched the mapper's cell-center ray cast.
+The lab expects 18 readings, 20 degrees apart, starting at the current heading and rotating counter-clockwise. Instead of writing a new scan routine, I reused my Lab 9 map scan. The firmware performs a dense 3 degree sweep over about one full turn, then Python downsamples those samples into the 18 observations expected by the localization notebook. I used the right ToF for the final observation vector because its placement gives cleaner geometry during an in-place turn, and I subtracted a small sensor mount offset in Python to better match the map ray cast.
 
 <details>
 <summary>Python: perform_observation_loop using MAP scan</summary>
@@ -246,21 +246,20 @@ if (map_phase == 1) {
 
 ## Baseline update-only localization
 
-I first ran the localization exactly the way the lab asks for it: one update step from a uniform prior. That baseline already showed a clear pattern. The left and center-left side of the map localized very well. The +x side was the weak spot. The robot sometimes matched the wrong cell because several right-side observations looked too similar to a left-side signature under a completely uniform prior.
+I first ran the localization exactly as assigned: one update step from a uniform prior. That baseline showed a clear split. The left and center-left side of the map localized very well, while the +x side was the weak spot. The failure mode was repeatable: the robot sometimes matched a left-side pose because several right-side observations looked too similar under a completely uniform prior.
 
 For the required poses, the baseline behavior was:
 
 - `(-3, -2)`: stable and correct
 - `(0, 3)`: stable and correct
-- `(0, 0)`: Always accurate, the easiest one.
-- `(5, -3)`: sometimes aliased to a left-side pose and mismatched with `(5, -3)`.
-- `(5, 3)`: mostly correct, but still had occasional left-side confusion, sometimes mismatched with `(5, -3)`.
+- `(5, -3)`: sometimes aliased to a left-side pose
+- `(5, 3)`: usually correct, but still had occasional left-side confusion
 
-This exposed real limitation of pure update-only localization. The Bayes filter itself was working. The problem was that the environment contains multiple places with similar 360 degree range structure. In other words, the update step was not failing randomly. It was failing in a repeatable way because the map has perceptually similar regions.
+So the baseline already answered the main lab question: the robot does localize better in some poses, and the difference comes from how distinctive the local wall and corner geometry is.
 
 ## Prior-guided localization
 
-My fix was to add an `APPROX_POSE` prior before the update step. The idea is simple: if the car starts from a previously high-confidence pose, then odometry is still good enough to estimate the rough region where the robot should be now, even if it is not accurate enough to run a full Bayes-filter prediction step. I used that rough estimate as a weak spatial prior, then let the observation update choose the final cell. This keeps the algorithm close to the lab requirement while removing the main aliasing failure mode that showed up on the +x side.
+To remove that aliasing, I added an `APPROX_POSE` prior before the update step. If the car starts from a previously high-confidence pose, then odometry is still good enough to estimate the rough region where the robot should be now, even if it is not accurate enough to run a full prediction step. I used that estimate only as a weak spatial prior, then let the observation update choose the final cell.
 
 <details>
 <summary>Python: weak approximate-pose prior</summary>
@@ -300,11 +299,11 @@ run_prior = _apply_pose_prior(loc, APPROX_POSE, PRIOR_XY_SIGMA, PRIOR_THETA_SIGM
 </div>
 </details>
 
-After adding that weak prior, all five poses reached high correct-cell accuracy, I tested each 3 times and they all localizaed to correct place (`3/3`). This was the version that felt robust enough to carry forward into Lab 12.
+After adding that weak prior, all four required poses localized to the correct cell in all three trials (`3/3` each). The extra `(0,0)` validation point was also `3/3`. This was the version I carried into Lab 12.
 
 ### Pose `(-3 ft, -2 ft, 0 deg)`
 
-This point localized very nicely even with the uniform-prior baseline. The final belief stayed in the correct cell and was only slightly shifted left in x, which is reasonable at this grid resolution. I think this point works so well because it is mostly enclosed by nearby walls with one main opening, so the scan contains a strong and fairly unique structure. This was one of the most stable poses in my runs.
+This point localized very nicely even with the uniform-prior baseline. The final belief stayed in the correct cell and was essentially on top of the ground-truth pose, with no meaningful visible error. I think this point works so well because it is mostly enclosed by nearby walls with one main opening, so the scan is quite distinctive.
 
 <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
   <div style="flex:1; min-width:320px; text-align:center;">
@@ -321,7 +320,7 @@ This point localized very nicely even with the uniform-prior baseline. The final
 
 ### Pose `(0 ft, 3 ft, 0 deg)`
 
-This point also localized cleanly. The final belief was close to the ground-truth cell and was again slightly biased left in x rather than catastrophically wrong. I think this pose is easier because it sees a strong corner plus additional landmarks deeper in the map, so the 360 degree scan is less symmetric than the difficult +x poses. Like `(-3,-2)`, this one was already strong in the baseline and stayed correct in the improved version.
+This point also localized cleanly. The final belief was again in the correct cell and the error was negligible by eye. I think this pose is easier because it sees a strong corner plus additional structure deeper in the map, so the 360 degree scan is less symmetric than the difficult +x poses.
 
 <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
   <div style="flex:1; min-width:320px; text-align:center;">
@@ -338,7 +337,7 @@ This point also localized cleanly. The final belief was close to the ground-trut
 
 ### Pose `(5 ft, -3 ft, 0 deg)`
 
-This was the worst required point in the baseline. Under a uniform prior it could confidently collapse onto the wrong left-side pose because the scan looked too much like a wall-surrounded region somewhere else in the map. This is exactly the kind of failure the lab is trying to show. The update math was fine, but the observation alone was not distinctive enough. After adding `APPROX_POSE`, the prior pushed probability mass into the correct neighborhood first, so the update no longer had to choose between several globally similar cells. That changed this pose from unreliable to stablly correct.
+This was the worst required point in the baseline. Under a uniform prior it could collapse onto the wrong left-side pose because the scan was not globally distinctive enough. After adding `APPROX_POSE`, it localized to the correct cell in all three trials. The remaining bias was small but visible: the estimate sat a little low and right of ground truth, with about `0.5 ft` of position error. My best explanation is that when the robot is near a tight corner, the ToF reading is slightly nonlinear and exaggerates how close that corner is, so the filter prefers a point that is a bit nearer to both walls than the real pose.
 
 <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
   <div style="flex:1; min-width:320px; text-align:center;">
@@ -355,7 +354,7 @@ This was the worst required point in the baseline. Under a uniform prior it coul
 
 ### Pose `(5 ft, 3 ft, 0 deg)`
 
-This point was better than `(5,-3)` even in the baseline, but it could still alias occasionally. It usually had enough extra structure from the lower wall and central obstacle to land in the correct area, but not enough to be perfectly stable under a uniform prior. The weak prior removed that ambiguity and made the result consistent. After the fix, all three trials ended in the correct cell.
+This point was better than `(5,-3)` in the baseline, but it could still alias occasionally. With the weak prior, all three trials ended in the correct cell. The residual bias here was larger than at `(5,-3)`: the estimate was a bit low and left of ground truth, with about `1 ft` of error. I suspect the same close-corner ToF exaggeration is involved here too, since the filter again behaves as if the robot is nearer to the nearby walls than it actually is.
 
 <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
   <div style="flex:1; min-width:320px; text-align:center;">
@@ -370,7 +369,7 @@ This point was better than `(5,-3)` even in the baseline, but it could still ali
   </div>
 </div>
 
-The `0,0` is the most stable one. Since the walls around this point is just so unique and can be easily identified.
+I also tested `(0,0)` as an extra validation point. It was the easiest one: the surrounding walls are very distinctive, and all three runs were essentially exact.
 
 <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
   <div style="flex:1; min-width:320px; text-align:center;">
@@ -387,11 +386,9 @@ The `0,0` is the most stable one. Since the walls around this point is just so u
 
 ## Discussion
 
-The baseline result taught the main lesson of this lab very clearly. A single update step with a uniform prior is not always enough on the real robot, even when the Bayes filter code is correct and the scan is dense. The robot localized better in `(-3,-2)`, `(0,3)`, and also my extra `(0,0)` test because those places are more distinctive. They have nearby walls, corners, and openings that make the 360 degree signature harder to confuse with somewhere else.
+The baseline result showed the main lesson of this lab clearly: a single update step with a uniform prior is not always enough on the real robot, even when the Bayes filter code is correct. The robot localized best at `(-3,-2)`, `(0,3)`, and the extra `(0,0)` point because those places have distinctive nearby walls and openings. The right-side poses are more ambiguous, so multiple cells can produce similar 360 degree signatures.
 
-The right-side poses are more ambiguous. At `(5,-3)` and sometimes `(5,3)`, the sensor sees longer open directions and fewer unique nearby features. That means several cells can produce similar beam patterns, so a uniform-prior update can choose the wrong global mode. This is why the mistakes were not random. They repeated in the same direction and often collapsed onto the same left-side alternative.
-
-The `APPROX_POSE` method fixed that without pretending odometry is globally accurate. I did not use odometry as a full motion-model prediction step. I only used it to give the filter a weak guess about which region of the map is plausible right now. That was enough to suppress the mirrored candidates while still letting the observation update decide the final cell. In practice this made the localization robust across repeated trials, and that is why I will reuse the same idea in Lab 12.
+The `APPROX_POSE` method fixed the wrong-cell jumps without pretending odometry is globally accurate. I did not use odometry as a full motion-model prediction step; I only used it to apply a weak prior over the plausible region before the update. That was enough to suppress the aliased left-side candidates. After that change, all four required poses were `3/3` correct-cell, and the only remaining errors were smaller sub-cell biases on the two right-side poses. That is the approach I will reuse in Lab 12.
 
 Meet my cat Mulberry! 🐱
 
