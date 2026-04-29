@@ -252,8 +252,8 @@ For the required poses, the baseline behavior was:
 
 - `(-3, -2)`: stable and correct
 - `(0, 3)`: stable and correct
-- `(5, -3)`: sometimes aliased to a left-side pose
-- `(5, 3)`: usually correct, but still had occasional left-side confusion
+- `(5, -3)`: sometimes aliased to a left-side pose, mismatched to (5, 3).
+- `(5, 3)`: usually correct, but still had occasional left-side confusion, sometimes mismatched to (5, -3)
 
 So the baseline already answered the main lab question: the robot does localize better in some poses, and the difference comes from how distinctive the local wall and corner geometry is.
 
@@ -301,7 +301,7 @@ run_prior = _apply_pose_prior(loc, APPROX_POSE, PRIOR_XY_SIGMA, PRIOR_THETA_SIGM
 
 After adding that weak prior, all four required poses localized to the correct cell in all three trials (`3/3` each). The extra `(0,0)` validation point was also `3/3`. This was the version I carried into Lab 12.
 
-### Pose `(-3 ft, -2 ft, 0 deg)`
+### Pose `(-3, -2)`
 
 This point localized very nicely even with the uniform-prior baseline. The final belief stayed in the correct cell and was essentially on top of the ground-truth pose, with no meaningful visible error. I think this point works so well because it is mostly enclosed by nearby walls with one main opening, so the scan is quite distinctive.
 
@@ -318,7 +318,7 @@ This point localized very nicely even with the uniform-prior baseline. The final
   </div>
 </div>
 
-### Pose `(0 ft, 3 ft, 0 deg)`
+### Pose `(0, 3)`
 
 This point also localized cleanly. The final belief was again in the correct cell and the error was negligible by eye. I think this pose is easier because it sees a strong corner plus additional structure deeper in the map, so the 360 degree scan is less symmetric than the difficult +x poses.
 
@@ -335,7 +335,7 @@ This point also localized cleanly. The final belief was again in the correct cel
   </div>
 </div>
 
-### Pose `(5 ft, -3 ft, 0 deg)`
+### Pose `(5, -3)`
 
 This was the worst required point in the baseline. Under a uniform prior it could collapse onto the wrong left-side pose because the scan was not globally distinctive enough. After adding `APPROX_POSE`, it localized to the correct cell in all three trials. The remaining bias was small but visible: the estimate sat a little low and right of ground truth, with about `0.5 ft` of position error. My best explanation is that when the robot is near a tight corner, the ToF reading is slightly nonlinear and exaggerates how close that corner is, so the filter prefers a point that is a bit nearer to both walls than the real pose.
 
@@ -352,7 +352,7 @@ This was the worst required point in the baseline. Under a uniform prior it coul
   </div>
 </div>
 
-### Pose `(5 ft, 3 ft, 0 deg)`
+### Pose `(5, 3)`
 
 This point was better than `(5,-3)` in the baseline, but it could still alias occasionally. With the weak prior, all three trials ended in the correct cell. The residual bias here was larger than at `(5,-3)`: the estimate was a bit low and left of ground truth, with about `1 ft` of error. I suspect the same close-corner ToF exaggeration is involved here too, since the filter again behaves as if the robot is nearer to the nearby walls than it actually is.
 
@@ -369,7 +369,7 @@ This point was better than `(5,-3)` in the baseline, but it could still alias oc
   </div>
 </div>
 
-I also tested `(0,0)` as an extra validation point. It was the easiest one: the surrounding walls are very distinctive, and all three runs were essentially exact.
+I also tested `(0,0)` as an extra validation point. It was the easiest one: the surrounding walls are very distinctive, and all three runs were essentially exact since this place is so unique.
 
 <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
   <div style="flex:1; min-width:320px; text-align:center;">
