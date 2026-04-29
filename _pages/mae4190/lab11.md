@@ -250,12 +250,13 @@ I first ran the localization exactly the way the lab asks for it: one update ste
 
 For the required poses, the baseline behavior was:
 
-- `(-3 ft, -2 ft, 0 deg)`: stable and correct
-- `(0 ft, 3 ft, 0 deg)`: stable and correct
-- `(5 ft, -3 ft, 0 deg)`: sometimes aliased to a left-side pose
-- `(5 ft, 3 ft, 0 deg)`: mostly correct, but still had occasional left-side confusion
+- `(-3, -2)`: stable and correct
+- `(0, 3)`: stable and correct
+- `(0, 0)`: Always accurate, the easiest one.
+- `(5, -3)`: sometimes aliased to a left-side pose and mismatched with `(5, -3)`.
+- `(5, 3)`: mostly correct, but still had occasional left-side confusion, sometimes mismatched with `(5, -3)`.
 
-This was useful because it exposed the real limitation of pure update-only localization. The Bayes filter itself was working. The problem was that the environment contains multiple places with similar 360 degree range structure. In other words, the update step was not failing randomly. It was failing in a repeatable way because the map has perceptually similar regions.
+This exposed real limitation of pure update-only localization. The Bayes filter itself was working. The problem was that the environment contains multiple places with similar 360 degree range structure. In other words, the update step was not failing randomly. It was failing in a repeatable way because the map has perceptually similar regions.
 
 ## Prior-guided localization
 
@@ -299,56 +300,56 @@ run_prior = _apply_pose_prior(loc, APPROX_POSE, PRIOR_XY_SIGMA, PRIOR_THETA_SIGM
 </div>
 </details>
 
-After adding that weak prior, all four required poses reached `3/3` correct-cell accuracy. I also tested an extra `0,0` point and it also reached `3/3`. This was the version that felt robust enough to carry forward into Lab 12.
+After adding that weak prior, all five poses reached high correct-cell accuracy, I tested each 3 times and they all localizaed to correct place (`3/3`). This was the version that felt robust enough to carry forward into Lab 12.
 
 ### Pose `(-3 ft, -2 ft, 0 deg)`
 
-This point localized very nicely even with the uniform-prior baseline. The final belief stayed in the correct cell and was only slightly shifted left in x, which is reasonable at this grid resolution. I think this point works so well because it is mostly enclosed by nearby walls with one main opening, so the scan contains a strong and fairly unique structure. This was one of the most stable poses in my runs, and it stayed `3/3` correct after adding the weak prior.
+This point localized very nicely even with the uniform-prior baseline. The final belief stayed in the correct cell and was only slightly shifted left in x, which is reasonable at this grid resolution. I think this point works so well because it is mostly enclosed by nearby walls with one main opening, so the scan contains a strong and fairly unique structure. This was one of the most stable poses in my runs.
 
 <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
   <div style="flex:1; min-width:320px; text-align:center;">
     <video width="100%" controls>
       <source src='/images/mae4190/lab11/-3_-2.mp4' type='video/mp4'>
     </video>
-    <div style="font-size:0.95em;">Run at `(-3,-2,0)`.</div>
+    <div style="font-size:0.95em;">Run at (-3,-2,0).</div>
   </div>
   <div style="flex:1; min-width:320px; text-align:center;">
     <img src='/images/mae4190/lab11/-3_-2.png' width='100%'>
-    <div style="font-size:0.95em;">Final belief for `(-3,-2,0)`.</div>
+    <div style="font-size:0.95em;">Final belief for (-3,-2,0).</div>
   </div>
 </div>
 
 ### Pose `(0 ft, 3 ft, 0 deg)`
 
-This point also localized cleanly. The final belief was close to the ground-truth cell and was again slightly biased left in x rather than catastrophically wrong. I think this pose is easier because it sees a strong corner plus additional landmarks deeper in the map, so the 360 degree scan is less symmetric than the difficult +x poses. Like `(-3,-2)`, this one was already strong in the baseline and stayed `3/3` correct in the improved version.
+This point also localized cleanly. The final belief was close to the ground-truth cell and was again slightly biased left in x rather than catastrophically wrong. I think this pose is easier because it sees a strong corner plus additional landmarks deeper in the map, so the 360 degree scan is less symmetric than the difficult +x poses. Like `(-3,-2)`, this one was already strong in the baseline and stayed correct in the improved version.
 
 <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
   <div style="flex:1; min-width:320px; text-align:center;">
     <video width="100%" controls>
       <source src='/images/mae4190/lab11/0_3.mp4' type='video/mp4'>
     </video>
-    <div style="font-size:0.95em;">Run at `(0,3,0)`.</div>
+    <div style="font-size:0.95em;">Run at (0,3,0).</div>
   </div>
   <div style="flex:1; min-width:320px; text-align:center;">
     <img src='/images/mae4190/lab11/0_3.png' width='100%'>
-    <div style="font-size:0.95em;">Final belief for `(0,3,0)`.</div>
+    <div style="font-size:0.95em;">Final belief for (0,3,0).</div>
   </div>
 </div>
 
 ### Pose `(5 ft, -3 ft, 0 deg)`
 
-This was the worst required point in the baseline. Under a uniform prior it could confidently collapse onto the wrong left-side pose because the scan looked too much like a wall-surrounded region somewhere else in the map. This is exactly the kind of failure the lab is trying to show. The update math was fine, but the observation alone was not distinctive enough. After adding `APPROX_POSE`, the prior pushed probability mass into the correct neighborhood first, so the update no longer had to choose between several globally similar cells. That changed this pose from unreliable to `3/3` correct.
+This was the worst required point in the baseline. Under a uniform prior it could confidently collapse onto the wrong left-side pose because the scan looked too much like a wall-surrounded region somewhere else in the map. This is exactly the kind of failure the lab is trying to show. The update math was fine, but the observation alone was not distinctive enough. After adding `APPROX_POSE`, the prior pushed probability mass into the correct neighborhood first, so the update no longer had to choose between several globally similar cells. That changed this pose from unreliable to stablly correct.
 
 <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
   <div style="flex:1; min-width:320px; text-align:center;">
     <video width="100%" controls>
       <source src='/images/mae4190/lab11/5_-3.mp4' type='video/mp4'>
     </video>
-    <div style="font-size:0.95em;">Run at `(5,-3,0)` after adding the weak prior.</div>
+    <div style="font-size:0.95em;">Run at (5,-3,0) after adding the weak prior.</div>
   </div>
   <div style="flex:1; min-width:320px; text-align:center;">
     <img src='/images/mae4190/lab11/5_-3.png' width='100%'>
-    <div style="font-size:0.95em;">Final belief for `(5,-3,0)`.</div>
+    <div style="font-size:0.95em;">Final belief for (5,-3,0).</div>
   </div>
 </div>
 
@@ -361,26 +362,26 @@ This point was better than `(5,-3)` even in the baseline, but it could still ali
     <video width="100%" controls>
       <source src='/images/mae4190/lab11/5_3.mp4' type='video/mp4'>
     </video>
-    <div style="font-size:0.95em;">Run at `(5,3,0)`.</div>
+    <div style="font-size:0.95em;">Run at (5,3,0).</div>
   </div>
   <div style="flex:1; min-width:320px; text-align:center;">
     <img src='/images/mae4190/lab11/5_3.png' width='100%'>
-    <div style="font-size:0.95em;">Final belief for `(5,3,0)`.</div>
+    <div style="font-size:0.95em;">Final belief for (5,3,0).</div>
   </div>
 </div>
 
-The extra `0,0` validation point was not required by the lab, so I am not treating it as one of the core results. Still, it was useful as a sanity check because it also reached `3/3` correct-cell accuracy with the same prior-guided workflow. This matches the general pattern that the center-left side of the map is easier to localize than the right side under a uniform prior.
+The `0,0` is the most stable one. Since the walls around this point is just so unique and can be easily identified.
 
 <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
   <div style="flex:1; min-width:320px; text-align:center;">
     <video width="100%" controls>
       <source src='/images/mae4190/lab11/0_0.mp4' type='video/mp4'>
     </video>
-    <div style="font-size:0.95em;">Extra validation run at `(0,0,0)`.</div>
+    <div style="font-size:0.95em;">Extra validation run at (0,0,0).</div>
   </div>
   <div style="flex:1; min-width:320px; text-align:center;">
     <img src='/images/mae4190/lab11/0_0.png' width='100%'>
-    <div style="font-size:0.95em;">Final belief for `(0,0,0)`.</div>
+    <div style="font-size:0.95em;">Final belief for (0,0,0).</div>
   </div>
 </div>
 
