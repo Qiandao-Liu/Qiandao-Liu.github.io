@@ -172,7 +172,7 @@ I originally planned a second localization checkpoint after segment 3, before en
 
 Professor Helbling mentioned in lecture that a robot can use its right-side sensor to track a wall. Segments 4, 5, 6, 7, 8 all travel along walls, so I built the controller around exactly that idea.
 
-The right ToF sensor feeds a P controller that steers left or right to hold a target standoff from the right wall. The front ToF sensor feeds a separate PID controller that modulates forward speed and triggers a stop when the distance ahead drops to the expected endpoint distance. Both controllers run together in the onboard loop so the robot handles small wall irregularities without any laptop involvement. Segment 5 between (5,-3) and (5,-2) is a short one-foot open-loop step to reposition the robot so the right sensor faces the wall that segment 6 will follow.
+The right ToF sensor feeds a P controller that steers left or right to hold a target standoff from the right wall. The front ToF sensor feeds a separate KF-PID controller that modulates forward speed and triggers a stop when the distance ahead drops to the expected endpoint distance. Both controllers run together in the onboard loop so the robot handles small wall irregularities without any laptop involvement. Segment 5 between (5,-3) and (5,-2) is a short one-foot open-loop step to reposition the robot so the right sensor faces the wall that segment 6 will follow.
 
 <details>
 <summary>Arduino: wall-follow control loop</summary>
