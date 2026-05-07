@@ -7,7 +7,7 @@ author_profile: true
 
 {% include base_path %}
 
-## ECE Robotics Day
+## ECE Robotics Day 🦾
 
 The robot also performed at ECE Robotics Day before lab 12 was due, doing the same drift stunt from Lab 8. Same firmware, same robot. It was a good reminder that the platform is solid.
 
@@ -18,6 +18,8 @@ The robot also performed at ECE Robotics Day before lab 12 was due, doing the sa
 ## Strategy
 
 The task is to navigate through 9 fixed waypoints on a known map. I did not implement global path planning. All the waypoints are given in advance and nothing in the environment moves, so there is nothing to plan online. Running the laptop as a real-time planner would also be slow since BLE communication adds too much latency for closed-loop corrections to be useful.
+
+<img src='/images/mae4190/lab12/map.png' width='700'>
 
 The path splits naturally into two phases. Segments 1 through 3 travel through open space at diagonal and lateral angles where wall references are not reliable, so I used gyroscope-based orientation control with timed forward drive. Segments 4 through 8 run along or close to the surrounding walls, so I switched to a wall-following controller using both the front and right ToF sensors. All motion decisions execute onboard on the Artemis. The laptop only triggers segments and runs the Bayes filter localization computation.
 
@@ -43,7 +45,7 @@ In the final run I removed it. The wall-following controller corrects lateral of
 
 ## Wall-Following Phase
 
-Professor Petersen mentioned in lecture that a robot can use its right-side sensor to track a wall. Segments 4, 6, 7, and 8 all travel along walls, so I built the controller around that idea.
+Professor Helbling mentioned in lecture that a robot can use its right-side sensor to track a wall. Segments 4, 5, 6, 7, 8 all travel along walls so I built the controller around that idea.
 
 The right ToF sensor feeds a P controller that steers left or right to hold a target standoff from the right wall. The front ToF sensor feeds a separate PID controller that modulates forward speed and triggers a stop when the distance ahead drops to the expected endpoint distance. This keeps the robot at a consistent lateral offset during straight runs and stops it accurately without any fixed timing from the laptop side. The steering and speed controllers run together in the onboard loop so the robot can handle small wall irregularities and still arrive at the right place.
 
