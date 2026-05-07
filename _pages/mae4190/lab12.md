@@ -281,7 +281,7 @@ The first wall-following attempts failed because the right-sensor P gain was too
     <video width="100%" controls>
       <source src='/images/mae4190/lab12/follow_wall_not_good_2.mp4' type='video/mp4'>
     </video>
-    <div style="font-size:0.9em; color:#555;">Attempt 2: same issue, more severe.</div>
+    <div style="font-size:0.9em; color:#555;">Attempt 2: wrong wall follow contorl lead robot early into final waypoint, then hit the wall.</div>
   </div>
 </div>
 
