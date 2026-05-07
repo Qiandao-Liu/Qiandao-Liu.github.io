@@ -52,7 +52,7 @@ The task is to navigate through 9 fixed waypoints on a known map. I did not impl
 
 The path splits naturally into two phases. Segments 1 through 3 travel through open space at diagonal and lateral angles where wall references are not reliable, so I used gyroscope-based orientation control with timed forward drive. Segments 4 through 8 run along or close to the surrounding walls, so I switched to a wall-following controller using both the front and right ToF sensors.
 
-The offboard laptop computes segment headings and stop distances from the waypoint geometry, then sends a single BLE command to start each segment. Everything after that — motor control, gyro PID, wall-follow PID, front ToF safety stops — runs onboard on the Artemis with no further laptop involvement until the segment finishes.
+The offboard laptop computes segment headings and stop distances from the waypoint geometry, then sends a single BLE command to start each segment. Everything after that like motor control, gyro PID, wall-follow PID, front ToF safety stops are all run onboard on the Artemis with no further laptop involvement until the segment finishes.
 
 ## Open-Loop Phase
 
