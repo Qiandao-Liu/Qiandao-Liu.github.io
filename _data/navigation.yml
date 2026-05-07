@@ -12,11 +12,6 @@ main:
     url: /cv/
     academic: true
 
-  - title: "Gallery"
-    url: /gallery/
-    academic: true
-    portal: true
-
   - title: "Academic"
     url: /
     art: true
