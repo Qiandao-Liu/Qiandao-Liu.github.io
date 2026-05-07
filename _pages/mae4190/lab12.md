@@ -39,7 +39,7 @@ The robot also performed at ECE Robotics Day before lab 12 was due, doing the sa
     </div>
     <div style="flex:2; background:#f3eaff; border:1px solid #9060aa; border-radius:6px; padding:8px 14px;">
       Segment 5 — open-loop step<br>
-      <span style="color:#555;">Short reposition to put right sensor against next wall</span>
+      <span style="color:#555;">Short move forward, but keep using rigth sensor follow the wall</span>
     </div>
   </div>
   <div style="font-size:1.3em; color:#666; line-height:1.3;">↓</div>
