@@ -1,14 +1,24 @@
 ---
 layout: archive
-title: "Research Projects"
+title: "Projects"
 permalink: /portfolio/
 author_profile: true
 ---
 
 {% include base_path %}
 
+{% assign research_posts = site.portfolio | where: "category", "research" | sort: "date" | reverse %}
+{% assign course_posts = site.portfolio | where: "category", "course" | sort: "date" | reverse %}
 
-{% for post in site.portfolio %}
+{% if research_posts.size > 0 %}
+<h2>Research Projects</h2>
+{% for post in research_posts %}
+  {% include archive-single.html %}
+{% endfor %}
+{% endif %}
+
+<h2>Course Projects</h2>
+{% for post in course_posts %}
   {% include archive-single.html %}
 {% endfor %}
 
