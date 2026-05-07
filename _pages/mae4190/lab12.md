@@ -9,7 +9,7 @@ author_profile: true
 
 ## ECE Robotics Day 🦾
 
-The robot also performed at ECE Robotics Day before lab 12 was due, doing the same drift stunt from Lab 8. Same firmware, same robot. It was a good reminder that the platform is solid.
+The robot also performed at ECE Robotics Day before lab 12 was due, doing the same drift stunt from Lab 8.
 
 <video width="700" controls>
   <source src='/images/mae4190/lab12/ECE_Robotics_Day_drift_show.mp4' type='video/mp4'>
