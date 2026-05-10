@@ -341,7 +341,7 @@ After the tuning, segments 6 and 8 stopped cleanly on a front-distance event dec
 
 The final run executes all 8 segments in sequence. The open-loop phase brings the robot to approximately (2,-3). The wall-follower picks up the bottom wall and carries it to (5,-3), steps north to (5,-2), follows the east wall up to (5,3), follows the top wall west to (0,3), and then follows the center wall south to (0,0).
 
-Waypoints 1 through 3 are hit approximately. The offboard laptop sends heading and duration to the Artemis and then waits; IMU drift and wheel slip accumulate over those diagonal and lateral segments, but the total error stays within roughly one grid cell since the distances are short. Waypoints 4 through 9 are much more accurate because the onboard wall-follow controller corrects position continuously throughout each segment without any round-trip to the laptop. The final position at (0,0) landed within about half a foot of the target.
+Waypoints 1 through 3 are hit approximately. The offboard laptop sends heading and duration to the Artemis and then waits; IMU drift and wheel slip accumulate over those diagonal and lateral segments, but the total error stays within roughly one grid cell since the distances are short. Waypoints 4 through 9 are much more accurate because the onboard wall-follow controller corrects position continuously throughout each segment without any round-trip to the laptop. The final position at (0,0) landed within about half a foot of the target. Total run time from start to finish was 1 minute 11 seconds.
 
 <video width="700" controls>
   <source src='/images/mae4190/lab12/final.mp4' type='video/mp4'>
